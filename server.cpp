@@ -7,10 +7,22 @@
 #include <string.h>
 #include <poll.h>
 #include <fcntl.h>
-#include <map>
+#include "hashtable.h"
 
-const uint32_t RES_NX = 1;
-const uint32_t RES_ERR = 2;
+//upgrades to do:
+//1.poll -> epoll
+//2.better buffer management
+//3.combine do_request() + make_response() ???
+
+
+#define container_of(ptr, T, member) \
+    ((T *)( (char *)ptr - offsetof(T, member) ))
+
+enum{
+    RES_OK = 0,
+    RES_ERR = 1,
+    RES_NX = 2
+};
 struct Conn{
     int fd;
     bool want_read;
@@ -24,26 +36,46 @@ struct Response{
     uint32_t status = 0;
     std::vector<uint8_t> data;
 };
+
+struct Entry{
+    HNode node;
+    std::string key;
+    std::string value;
+};
+
+static struct {
+    HMap db;
+}g_data;
+
 const int MAXLEN = 1024 * 1024; //1MB
 const int MAXNSTR = 10;
-static std::map<std::string, std::string> g_data;
 
 
 void alert_msg(std::string msg);
 static void die(const char *msg);
 static void fd_set_nb(int fd);
+
 static Conn* handle_accept(int fd);
 static void handle_close(Conn *conn);
 static void handle_read(Conn *conn);
 static void handle_write(Conn *conn);
+
 static void buf_append(std::vector<uint8_t> &dest_buf, const uint8_t* sr_buf,  size_t n);
 static void buf_consume(std::vector<uint8_t> &buf, size_t n);
+
 static bool try_one_request(Conn *conn);
 static void make_response(struct Response &res, std::vector<uint8_t> &out);
 static void do_request(std::vector<std::string> &cmd, struct Response &out);
+static int parse_request(uint8_t *msg, int32_t len, std::vector<std::string> &out);
+
 static bool read_str(uint8_t *&curr, uint8_t* end, uint32_t len, std::string &out);
 static bool read_u32(uint8_t *&curr, uint8_t* end, uint32_t* out);
-int parse_request(uint8_t *msg, int32_t len, std::vector<std::string> &out);
+
+static void do_get(std::string &key, Response &out);
+static void do_del(std::string &key, Response &out);
+static void do_set(std::string &key, std::string &value, Response &out);
+
+
 
 int main(){
     int fd, rv;
@@ -160,9 +192,11 @@ static Conn* handle_accept(int fd){
     conn->want_read = true;
     return conn;
 }
+
 static void handle_close(Conn *conn){
     (void)close(conn->fd);
 }
+
 static void handle_read(Conn * conn){
     uint8_t buf[MAXLEN]; 
     int rv = read(conn->fd, buf, sizeof(buf));
@@ -206,14 +240,16 @@ static void handle_write(Conn * conn){
         conn->want_read = true;
         conn->want_write = false;
     }
-    alert_msg("wrote into outgoing buffer.");
 }
+
 static void buf_append(std::vector<uint8_t> &dest_buf, const uint8_t* sr_buf,  size_t n){
     dest_buf.insert(dest_buf.end(), sr_buf, sr_buf + n);
 }
+
 static void buf_consume(std::vector<uint8_t> &buf, size_t n){
     buf.erase(buf.begin(), buf.begin() + n);
 }
+
 static bool try_one_request(Conn *conn){
     
     //uint8_t buf[MAXLEN];
@@ -223,6 +259,7 @@ static bool try_one_request(Conn *conn){
     uint32_t len;
     memcpy(&len, conn->incoming.data(), 4);
     if(len > MAXLEN){
+        alert_msg("protocol len error");
         conn->want_close = true;        //protocol error therefore want close
         return false;
     }
@@ -237,13 +274,13 @@ static bool try_one_request(Conn *conn){
         conn->want_close = true;
         return false;
     }
-    buf_consume(conn->incoming, len);
+    buf_consume(conn->incoming, len+4);
     do_request(cmd, res);
     make_response(res, conn->outgoing);
-    alert_msg("sent 1 response.");
     return true;
 }
-int parse_request(uint8_t *msg, int32_t len, std::vector<std::string> &out){
+
+static int parse_request(uint8_t *msg, int32_t len, std::vector<std::string> &out){
     uint32_t nstr;
     uint8_t* end = msg + len;
     if(!read_u32(msg, end, &nstr)){
@@ -269,6 +306,7 @@ int parse_request(uint8_t *msg, int32_t len, std::vector<std::string> &out){
     }
     return 0;
 }
+
 static bool read_u32(uint8_t *&curr, uint8_t* end, uint32_t* out){
     if(curr + 4 > end){
         return false;
@@ -277,6 +315,7 @@ static bool read_u32(uint8_t *&curr, uint8_t* end, uint32_t* out){
     curr += 4;
     return true;
 }
+
 static bool read_str(uint8_t *&curr, uint8_t* end, uint32_t len, std::string &out){
     if(curr + len > end){
         return false;
@@ -286,22 +325,22 @@ static bool read_str(uint8_t *&curr, uint8_t* end, uint32_t len, std::string &ou
     return true;
 }
 
+static bool entry_eq(HNode *hnode1, HNode *hnode2){
+    Entry *e1 = container_of(hnode1, Entry, node);
+    Entry *e2 = container_of(hnode2, Entry, node);
+    return e1->key == e2->key;
+
+}
 
 static void do_request(std::vector<std::string> &cmd, struct Response &out){
     if(cmd.size() == 2 && cmd[0] == "get"){
-        auto it = g_data.find(cmd[1]);
-        if(it == g_data.end()){
-            out.status = RES_NX;
-            return;
-        }
-        std::string &val = it->second;
-        out.data.assign(val.begin(), val.end());
+        do_get(cmd[1], out);
     }
     else if (cmd.size() == 2 && cmd[0] == "del"){
-        g_data.erase(cmd[1]);
+        do_del(cmd[1], out);
     }
     else if(cmd.size() == 3 && cmd[0] == "set"){
-        g_data[cmd[1]].swap(cmd[2]);
+        do_set(cmd[1], cmd[2], out);
     }
     else{
         out.status = RES_ERR;
@@ -313,4 +352,69 @@ static void make_response(struct Response &res, std::vector<uint8_t> &out){
     buf_append(out, (const uint8_t*)&len, sizeof(len));
     buf_append(out, (const uint8_t*)&res.status, sizeof(res.status));
     buf_append(out, res.data.data(), res.data.size());
+}
+
+static uint64_t str_hash(std::string str){ //fnv-1a hash function
+    uint64_t hash = 14695981039346656037ULL; // FNV offset basis
+    for (size_t i = 0; i < str.length(); i++) {
+        hash ^= (uint64_t)str[i];
+        hash *= 1099511628211ULL;            // FNV prime
+    }
+    return hash;
+}
+
+static void do_get(std::string &key, Response &out){
+    Entry lookup{};
+    lookup.key = key;
+    lookup.node.hcode = str_hash(key);
+    HNode *node = hm_lookup(&(g_data.db), &lookup.node, entry_eq);
+    if(node){
+        out.status = RES_OK;
+        Entry *e = container_of(node, Entry, node);
+        out.data.assign( e->value.begin(), e->value.end());
+    }
+    else{
+        out.status = RES_NX;
+        out.data = {};
+    }
+
+}
+
+static void do_set(std::string &key, std::string &value, Response &out){
+    Entry lookup{};
+    lookup.key = key;
+    lookup.node.hcode = str_hash(key);
+    HNode *node = hm_lookup(&g_data.db, &lookup.node, entry_eq);
+    if(node){
+        container_of(node, Entry, node)->value = std::move(value);
+    }
+    else{
+        Entry *e = new Entry();
+        e->node.hcode = lookup.node.hcode;
+        e->node.next = NULL;
+        e->key = std::move(key);
+        e->value = std::move(value);
+        hm_insert(&g_data.db, &e->node);
+    }
+    out.status = RES_OK;
+    out.data = {};
+    
+
+}
+
+static void do_del(std::string &key, Response &out){
+    Entry lookup{};
+    lookup.key = key;
+    lookup.node.hcode = str_hash(key);
+    HNode *node = hm_delete(&g_data.db, &lookup.node, entry_eq);
+    if(node){
+        out.status = RES_OK;
+        out.data = {};
+        Entry *e = container_of(node, Entry, node);
+        delete e;
+    }
+    else{
+        out.status = RES_NX;
+        out.data = {};
+    }
 }
