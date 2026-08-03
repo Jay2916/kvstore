@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "Debug kvserver",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/kvserver",
+            "args": ["6666"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug kvclient",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/kvclient",
+            "cwd": "${workspaceFolder}",
+            "args": ["127.0.0.1", "6666"]
+        }
+    ]
+}
