@@ -8,6 +8,7 @@
 #include <vector>
 #include <sys/types.h>
 #include <netdb.h>
+#include <../include/helper.h>
 
 const int MAXLEN = 1024 * 1024; //1MB
 struct Response{
@@ -19,47 +20,6 @@ enum{
     RES_ERR = 1,
     RES_NX = 2
 };
-void alert_msg(std::string msg){
-    std::cout <<"Error: "<< msg << std::endl;
-}
-static void die(const char *msg) {
-    int err = errno;
-    fprintf(stderr, "[%d] %s\n", err, msg);
-    abort();
-}
-static bool read_u32(uint8_t *&curr, uint8_t* end, uint32_t* out){
-    if(curr + 4 > end){
-        return false;
-    }
-    memcpy(out, curr, 4);
-    curr += 4;
-    return true;
-}
-static bool read_str(uint8_t *&curr, uint8_t* end, uint32_t len, uint8_t* out){
-    if(curr + len > end){
-        return false;
-    }
-    memcpy(out, curr, len);
-    curr += len ;
-    return true;
-}
-int readfull(int fd, uint8_t *buf, size_t n){
-    ssize_t rsize;
-    while(n > 0){
-        rsize = read(fd, buf, n);
-        if(rsize < 0){
-            return -1;
-        }
-        else if(rsize == 0){
-            alert_msg("server closed connectoin.");
-            return -2;
-        }
-        assert((size_t)rsize <= n);
-        n -= (size_t)rsize;
-        buf += rsize;
-    }
-    return 0;
-}
 static void parse_response(uint8_t *data, Response &res, int n){
     uint32_t len;
     uint8_t* end = data + n; 
@@ -68,37 +28,10 @@ static void parse_response(uint8_t *data, Response &res, int n){
     res.data.resize(n);
     (void)read_str(data, end, len - 4, &res.data[0]);
 }
-static std::string eval_status(int i){
-    switch(i){
-        case RES_OK:    return "RES_OK";
-        case RES_ERR:   return "RES_ERR";
-        case RES_NX:    return "RES_NX";
-        default:    return "INVALID";
-    }
-}
+
 static void print_response(struct Response &res){
     std::cout << "status: " << eval_status((int)res.status) << std::endl;
     std::cout << "data: " << std::string(res.data.begin(), res.data.end()) << std::endl;
-}
-int writeall(int fd, char*buf, size_t n){
-    ssize_t rsize;
-    while(n > 0){
-        rsize = write(fd, buf, n);
-        if(rsize <= 0){
-            return -1;
-        }
-        assert((size_t)rsize <= n);
-        n -= rsize;
-        buf += rsize;
-    }
-    return 0;
-}
-template <typename T> static void print_vector(std::vector<T> vec){
-    std::cout << "[ ";
-    for(auto it = vec.begin(); it != vec.end(); it++){
-        std::cout << *it << " "; 
-    }
-    std::cout << "] " << std::endl;
 }
 int query_send(int fd, const uint8_t* text, int n){
     uint32_t len = n;
@@ -106,7 +39,7 @@ int query_send(int fd, const uint8_t* text, int n){
         alert_msg("query too long");
         return -1;
     }
-    char wbuf[4 + MAXLEN];
+    uint8_t wbuf[4 + MAXLEN];
     memcpy(wbuf, &len, 4);
     memcpy(&wbuf[4], text, len);
     int err;
@@ -117,23 +50,6 @@ int query_send(int fd, const uint8_t* text, int n){
     }
     std::cout <<"Sent lenght: "<< len+4 << std::endl;
     return 0;
-}
-static bool write_u32(uint8_t *&curr, uint8_t* end, uint32_t in){
-    if(curr + 4 > end){
-        return false;
-    }
-    memcpy(curr, &in, sizeof(in));
-    curr += 4;
-    return true;
-}
-static bool write_str(uint8_t *&curr, uint8_t* end, const uint8_t *in, uint32_t len){
-    if(curr + len > end){
-        return false;
-    }
-    memcpy(curr, in, len);
-    curr += len;
-    return true;
-
 }
 static int make_query(std::vector<std::string> cmd, uint8_t *out){
     uint8_t * start = out;

@@ -29,7 +29,7 @@
 						"c++"
 					]
 				},
-				"path" : "/usr/bin/c++",
+				"path" : "/usr/bin/clang++",
 				"version" : "21.0.0.21000101"
 			},
 			"language" : "CXX",

@@ -149,29 +149,29 @@ kvclient/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/build
 .PHONY : kvclient/fast
 
-client/main.o: client/main.cpp.o
-.PHONY : client/main.o
+client/new_client.o: client/new_client.cpp.o
+.PHONY : client/new_client.o
 
 # target to build an object file
-client/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/main.cpp.o
-.PHONY : client/main.cpp.o
+client/new_client.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/new_client.cpp.o
+.PHONY : client/new_client.cpp.o
 
-client/main.i: client/main.cpp.i
-.PHONY : client/main.i
+client/new_client.i: client/new_client.cpp.i
+.PHONY : client/new_client.i
 
 # target to preprocess a source file
-client/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/main.cpp.i
-.PHONY : client/main.cpp.i
+client/new_client.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/new_client.cpp.i
+.PHONY : client/new_client.cpp.i
 
-client/main.s: client/main.cpp.s
-.PHONY : client/main.s
+client/new_client.s: client/new_client.cpp.s
+.PHONY : client/new_client.s
 
 # target to generate assembly for a file
-client/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/main.cpp.s
-.PHONY : client/main.cpp.s
+client/new_client.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/new_client.cpp.s
+.PHONY : client/new_client.cpp.s
 
 server/main.o: server/main.cpp.o
 .PHONY : server/main.o
@@ -221,6 +221,33 @@ src/hashtable.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvserver.dir/build.make CMakeFiles/kvserver.dir/src/hashtable.cpp.s
 .PHONY : src/hashtable.cpp.s
 
+src/helper.o: src/helper.cpp.o
+.PHONY : src/helper.o
+
+# target to build an object file
+src/helper.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvserver.dir/build.make CMakeFiles/kvserver.dir/src/helper.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/src/helper.cpp.o
+.PHONY : src/helper.cpp.o
+
+src/helper.i: src/helper.cpp.i
+.PHONY : src/helper.i
+
+# target to preprocess a source file
+src/helper.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvserver.dir/build.make CMakeFiles/kvserver.dir/src/helper.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/src/helper.cpp.i
+.PHONY : src/helper.cpp.i
+
+src/helper.s: src/helper.cpp.s
+.PHONY : src/helper.s
+
+# target to generate assembly for a file
+src/helper.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvserver.dir/build.make CMakeFiles/kvserver.dir/src/helper.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/src/helper.cpp.s
+.PHONY : src/helper.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -232,15 +259,18 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... kvclient"
 	@echo "... kvserver"
-	@echo "... client/main.o"
-	@echo "... client/main.i"
-	@echo "... client/main.s"
+	@echo "... client/new_client.o"
+	@echo "... client/new_client.i"
+	@echo "... client/new_client.s"
 	@echo "... server/main.o"
 	@echo "... server/main.i"
 	@echo "... server/main.s"
 	@echo "... src/hashtable.o"
 	@echo "... src/hashtable.i"
 	@echo "... src/hashtable.s"
+	@echo "... src/helper.o"
+	@echo "... src/helper.i"
+	@echo "... src/helper.s"
 .PHONY : help
 
 

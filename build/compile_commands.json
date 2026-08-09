@@ -1,0 +1,32 @@
+[
+{
+  "directory": "/Users/jay/kvserver/build",
+  "command": "/usr/bin/clang++   -g -std=gnu++20 -arch arm64 -o CMakeFiles/kvserver.dir/server/main.cpp.o -c /Users/jay/kvserver/server/main.cpp",
+  "file": "/Users/jay/kvserver/server/main.cpp",
+  "output": "CMakeFiles/kvserver.dir/server/main.cpp.o"
+},
+{
+  "directory": "/Users/jay/kvserver/build",
+  "command": "/usr/bin/clang++   -g -std=gnu++20 -arch arm64 -o CMakeFiles/kvserver.dir/src/hashtable.cpp.o -c /Users/jay/kvserver/src/hashtable.cpp",
+  "file": "/Users/jay/kvserver/src/hashtable.cpp",
+  "output": "CMakeFiles/kvserver.dir/src/hashtable.cpp.o"
+},
+{
+  "directory": "/Users/jay/kvserver/build",
+  "command": "/usr/bin/clang++   -g -std=gnu++20 -arch arm64 -o CMakeFiles/kvserver.dir/src/helper.cpp.o -c /Users/jay/kvserver/src/helper.cpp",
+  "file": "/Users/jay/kvserver/src/helper.cpp",
+  "output": "CMakeFiles/kvserver.dir/src/helper.cpp.o"
+},
+{
+  "directory": "/Users/jay/kvserver/build",
+  "command": "/usr/bin/clang++   -g -std=gnu++20 -arch arm64 -Wall -Wextra -Werror -o CMakeFiles/kvclient.dir/client/new_client.cpp.o -c /Users/jay/kvserver/client/new_client.cpp",
+  "file": "/Users/jay/kvserver/client/new_client.cpp",
+  "output": "CMakeFiles/kvclient.dir/client/new_client.cpp.o"
+},
+{
+  "directory": "/Users/jay/kvserver/build",
+  "command": "/usr/bin/clang++   -g -std=gnu++20 -arch arm64 -Wall -Wextra -Werror -o CMakeFiles/kvclient.dir/src/helper.cpp.o -c /Users/jay/kvserver/src/helper.cpp",
+  "file": "/Users/jay/kvserver/src/helper.cpp",
+  "output": "CMakeFiles/kvclient.dir/src/helper.cpp.o"
+}
+]

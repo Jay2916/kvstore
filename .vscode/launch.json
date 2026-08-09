@@ -7,7 +7,7 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/kvserver",
-            "args": ["6666"],
+            "args": ["1234"],
             "cwd": "${workspaceFolder}"
         },
         {
@@ -15,8 +15,16 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/kvclient",
-            "cwd": "${workspaceFolder}",
-            "args": ["127.0.0.1", "6666"]
+            "cwd": "${workspaceFolder}"
+        }
+    ],
+    "compounds" :  [
+        {
+            "name" : "Debug kvserver + kvclient",
+            "configurations" : [
+                "Debug kvserver",
+                "Debug kvclient"
+            ]
         }
     ]
 }
