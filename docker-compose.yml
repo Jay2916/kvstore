@@ -2,7 +2,7 @@ services:
   server:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.server
     ports:
       - "4444:4444"
 
@@ -10,6 +10,4 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.client
-    depends_on:
-      - server
     command: ["./kvbench", "server", "4444"]

@@ -1,1 +1,1 @@
-/usr/bin/clang++ -g -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/kvserver.dir/server/main.cpp.o CMakeFiles/kvserver.dir/src/hashtable.cpp.o CMakeFiles/kvserver.dir/src/helper.cpp.o -o kvserver
+/usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/kvserver.dir/server/main.cpp.o CMakeFiles/kvserver.dir/server/server.cpp.o CMakeFiles/kvserver.dir/src/hashtable.cpp.o CMakeFiles/kvserver.dir/src/helper.cpp.o CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o -o kvserver

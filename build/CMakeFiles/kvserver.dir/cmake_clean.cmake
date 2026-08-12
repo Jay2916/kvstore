@@ -1,10 +1,14 @@
 file(REMOVE_RECURSE
   "CMakeFiles/kvserver.dir/server/main.cpp.o"
   "CMakeFiles/kvserver.dir/server/main.cpp.o.d"
+  "CMakeFiles/kvserver.dir/server/server.cpp.o"
+  "CMakeFiles/kvserver.dir/server/server.cpp.o.d"
   "CMakeFiles/kvserver.dir/src/hashtable.cpp.o"
   "CMakeFiles/kvserver.dir/src/hashtable.cpp.o.d"
   "CMakeFiles/kvserver.dir/src/helper.cpp.o"
   "CMakeFiles/kvserver.dir/src/helper.cpp.o.d"
+  "CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o"
+  "CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o.d"
   "kvserver"
   "kvserver.pdb"
 )

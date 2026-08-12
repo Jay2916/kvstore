@@ -8,9 +8,11 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/jay/kvserver/server/main.cpp" "CMakeFiles/kvserver.dir/server/main.cpp.o" "gcc" "CMakeFiles/kvserver.dir/server/main.cpp.o.d"
-  "/Users/jay/kvserver/src/hashtable.cpp" "CMakeFiles/kvserver.dir/src/hashtable.cpp.o" "gcc" "CMakeFiles/kvserver.dir/src/hashtable.cpp.o.d"
-  "/Users/jay/kvserver/src/helper.cpp" "CMakeFiles/kvserver.dir/src/helper.cpp.o" "gcc" "CMakeFiles/kvserver.dir/src/helper.cpp.o.d"
+  "/Users/jay/kvstore/server/main.cpp" "CMakeFiles/kvserver.dir/server/main.cpp.o" "gcc" "CMakeFiles/kvserver.dir/server/main.cpp.o.d"
+  "/Users/jay/kvstore/server/server.cpp" "CMakeFiles/kvserver.dir/server/server.cpp.o" "gcc" "CMakeFiles/kvserver.dir/server/server.cpp.o.d"
+  "/Users/jay/kvstore/src/hashtable.cpp" "CMakeFiles/kvserver.dir/src/hashtable.cpp.o" "gcc" "CMakeFiles/kvserver.dir/src/hashtable.cpp.o.d"
+  "/Users/jay/kvstore/src/helper.cpp" "CMakeFiles/kvserver.dir/src/helper.cpp.o" "gcc" "CMakeFiles/kvserver.dir/src/helper.cpp.o.d"
+  "/Users/jay/kvstore/src/kvprotocol.cpp" "CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o" "gcc" "CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

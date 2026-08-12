@@ -57,10 +57,10 @@ RM = /opt/homebrew/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/jay/kvserver
+CMAKE_SOURCE_DIR = /Users/jay/kvstore
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/jay/kvserver/build
+CMAKE_BINARY_DIR = /Users/jay/kvstore/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,17 +87,10 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/jay/kvserver/build/CMakeFiles /Users/jay/kvserver/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/jay/kvstore/build/CMakeFiles /Users/jay/kvstore/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/jay/kvserver/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/jay/kvstore/build/CMakeFiles 0
 .PHONY : all
-
-# The main codegen target
-codegen: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/jay/kvserver/build/CMakeFiles /Users/jay/kvserver/build//CMakeFiles/progress.marks
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 codegen
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/jay/kvserver/build/CMakeFiles 0
-.PHONY : codegen
 
 # The main clean target
 clean:
@@ -149,29 +142,77 @@ kvclient/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/build
 .PHONY : kvclient/fast
 
-client/new_client.o: client/new_client.cpp.o
-.PHONY : client/new_client.o
+client/cli.o: client/cli.cpp.o
+.PHONY : client/cli.o
 
 # target to build an object file
-client/new_client.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/new_client.cpp.o
-.PHONY : client/new_client.cpp.o
+client/cli.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/cli.cpp.o
+.PHONY : client/cli.cpp.o
 
-client/new_client.i: client/new_client.cpp.i
-.PHONY : client/new_client.i
+client/cli.i: client/cli.cpp.i
+.PHONY : client/cli.i
 
 # target to preprocess a source file
-client/new_client.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/new_client.cpp.i
-.PHONY : client/new_client.cpp.i
+client/cli.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/cli.cpp.i
+.PHONY : client/cli.cpp.i
 
-client/new_client.s: client/new_client.cpp.s
-.PHONY : client/new_client.s
+client/cli.s: client/cli.cpp.s
+.PHONY : client/cli.s
 
 # target to generate assembly for a file
-client/new_client.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/new_client.cpp.s
-.PHONY : client/new_client.cpp.s
+client/cli.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/cli.cpp.s
+.PHONY : client/cli.cpp.s
+
+client/client.o: client/client.cpp.o
+.PHONY : client/client.o
+
+# target to build an object file
+client/client.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/client.cpp.o
+.PHONY : client/client.cpp.o
+
+client/client.i: client/client.cpp.i
+.PHONY : client/client.i
+
+# target to preprocess a source file
+client/client.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/client.cpp.i
+.PHONY : client/client.cpp.i
+
+client/client.s: client/client.cpp.s
+.PHONY : client/client.s
+
+# target to generate assembly for a file
+client/client.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/client.cpp.s
+.PHONY : client/client.cpp.s
+
+client/main.o: client/main.cpp.o
+.PHONY : client/main.o
+
+# target to build an object file
+client/main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/main.cpp.o
+.PHONY : client/main.cpp.o
+
+client/main.i: client/main.cpp.i
+.PHONY : client/main.i
+
+# target to preprocess a source file
+client/main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/main.cpp.i
+.PHONY : client/main.cpp.i
+
+client/main.s: client/main.cpp.s
+.PHONY : client/main.s
+
+# target to generate assembly for a file
+client/main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/client/main.cpp.s
+.PHONY : client/main.cpp.s
 
 server/main.o: server/main.cpp.o
 .PHONY : server/main.o
@@ -196,6 +237,30 @@ server/main.s: server/main.cpp.s
 server/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvserver.dir/build.make CMakeFiles/kvserver.dir/server/main.cpp.s
 .PHONY : server/main.cpp.s
+
+server/server.o: server/server.cpp.o
+.PHONY : server/server.o
+
+# target to build an object file
+server/server.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvserver.dir/build.make CMakeFiles/kvserver.dir/server/server.cpp.o
+.PHONY : server/server.cpp.o
+
+server/server.i: server/server.cpp.i
+.PHONY : server/server.i
+
+# target to preprocess a source file
+server/server.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvserver.dir/build.make CMakeFiles/kvserver.dir/server/server.cpp.i
+.PHONY : server/server.cpp.i
+
+server/server.s: server/server.cpp.s
+.PHONY : server/server.s
+
+# target to generate assembly for a file
+server/server.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvserver.dir/build.make CMakeFiles/kvserver.dir/server/server.cpp.s
+.PHONY : server/server.cpp.s
 
 src/hashtable.o: src/hashtable.cpp.o
 .PHONY : src/hashtable.o
@@ -248,29 +313,67 @@ src/helper.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/src/helper.cpp.s
 .PHONY : src/helper.cpp.s
 
+src/kvprotocol.o: src/kvprotocol.cpp.o
+.PHONY : src/kvprotocol.o
+
+# target to build an object file
+src/kvprotocol.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvserver.dir/build.make CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/src/kvprotocol.cpp.o
+.PHONY : src/kvprotocol.cpp.o
+
+src/kvprotocol.i: src/kvprotocol.cpp.i
+.PHONY : src/kvprotocol.i
+
+# target to preprocess a source file
+src/kvprotocol.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvserver.dir/build.make CMakeFiles/kvserver.dir/src/kvprotocol.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/src/kvprotocol.cpp.i
+.PHONY : src/kvprotocol.cpp.i
+
+src/kvprotocol.s: src/kvprotocol.cpp.s
+.PHONY : src/kvprotocol.s
+
+# target to generate assembly for a file
+src/kvprotocol.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvserver.dir/build.make CMakeFiles/kvserver.dir/src/kvprotocol.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kvclient.dir/build.make CMakeFiles/kvclient.dir/src/kvprotocol.cpp.s
+.PHONY : src/kvprotocol.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... codegen"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... kvclient"
 	@echo "... kvserver"
-	@echo "... client/new_client.o"
-	@echo "... client/new_client.i"
-	@echo "... client/new_client.s"
+	@echo "... client/cli.o"
+	@echo "... client/cli.i"
+	@echo "... client/cli.s"
+	@echo "... client/client.o"
+	@echo "... client/client.i"
+	@echo "... client/client.s"
+	@echo "... client/main.o"
+	@echo "... client/main.i"
+	@echo "... client/main.s"
 	@echo "... server/main.o"
 	@echo "... server/main.i"
 	@echo "... server/main.s"
+	@echo "... server/server.o"
+	@echo "... server/server.i"
+	@echo "... server/server.s"
 	@echo "... src/hashtable.o"
 	@echo "... src/hashtable.i"
 	@echo "... src/hashtable.s"
 	@echo "... src/helper.o"
 	@echo "... src/helper.i"
 	@echo "... src/helper.s"
+	@echo "... src/kvprotocol.o"
+	@echo "... src/kvprotocol.i"
+	@echo "... src/kvprotocol.s"
 .PHONY : help
 
 

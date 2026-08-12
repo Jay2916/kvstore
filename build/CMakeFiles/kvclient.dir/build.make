@@ -53,10 +53,10 @@ RM = /opt/homebrew/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/jay/kvserver
+CMAKE_SOURCE_DIR = /Users/jay/kvstore
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/jay/kvserver/build
+CMAKE_BINARY_DIR = /Users/jay/kvstore/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/kvclient.dir/depend.make
@@ -72,47 +72,95 @@ include CMakeFiles/kvclient.dir/flags.make
 CMakeFiles/kvclient.dir/codegen:
 .PHONY : CMakeFiles/kvclient.dir/codegen
 
-CMakeFiles/kvclient.dir/client/new_client.cpp.o: CMakeFiles/kvclient.dir/flags.make
-CMakeFiles/kvclient.dir/client/new_client.cpp.o: /Users/jay/kvserver/client/new_client.cpp
-CMakeFiles/kvclient.dir/client/new_client.cpp.o: CMakeFiles/kvclient.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/kvclient.dir/client/new_client.cpp.o"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvclient.dir/client/new_client.cpp.o -MF CMakeFiles/kvclient.dir/client/new_client.cpp.o.d -o CMakeFiles/kvclient.dir/client/new_client.cpp.o -c /Users/jay/kvserver/client/new_client.cpp
+CMakeFiles/kvclient.dir/client/client.cpp.o: CMakeFiles/kvclient.dir/flags.make
+CMakeFiles/kvclient.dir/client/client.cpp.o: /Users/jay/kvstore/client/client.cpp
+CMakeFiles/kvclient.dir/client/client.cpp.o: CMakeFiles/kvclient.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvstore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/kvclient.dir/client/client.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvclient.dir/client/client.cpp.o -MF CMakeFiles/kvclient.dir/client/client.cpp.o.d -o CMakeFiles/kvclient.dir/client/client.cpp.o -c /Users/jay/kvstore/client/client.cpp
 
-CMakeFiles/kvclient.dir/client/new_client.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/kvclient.dir/client/new_client.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvserver/client/new_client.cpp > CMakeFiles/kvclient.dir/client/new_client.cpp.i
+CMakeFiles/kvclient.dir/client/client.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/kvclient.dir/client/client.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvstore/client/client.cpp > CMakeFiles/kvclient.dir/client/client.cpp.i
 
-CMakeFiles/kvclient.dir/client/new_client.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/kvclient.dir/client/new_client.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvserver/client/new_client.cpp -o CMakeFiles/kvclient.dir/client/new_client.cpp.s
+CMakeFiles/kvclient.dir/client/client.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/kvclient.dir/client/client.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvstore/client/client.cpp -o CMakeFiles/kvclient.dir/client/client.cpp.s
+
+CMakeFiles/kvclient.dir/client/cli.cpp.o: CMakeFiles/kvclient.dir/flags.make
+CMakeFiles/kvclient.dir/client/cli.cpp.o: /Users/jay/kvstore/client/cli.cpp
+CMakeFiles/kvclient.dir/client/cli.cpp.o: CMakeFiles/kvclient.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvstore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/kvclient.dir/client/cli.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvclient.dir/client/cli.cpp.o -MF CMakeFiles/kvclient.dir/client/cli.cpp.o.d -o CMakeFiles/kvclient.dir/client/cli.cpp.o -c /Users/jay/kvstore/client/cli.cpp
+
+CMakeFiles/kvclient.dir/client/cli.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/kvclient.dir/client/cli.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvstore/client/cli.cpp > CMakeFiles/kvclient.dir/client/cli.cpp.i
+
+CMakeFiles/kvclient.dir/client/cli.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/kvclient.dir/client/cli.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvstore/client/cli.cpp -o CMakeFiles/kvclient.dir/client/cli.cpp.s
+
+CMakeFiles/kvclient.dir/client/main.cpp.o: CMakeFiles/kvclient.dir/flags.make
+CMakeFiles/kvclient.dir/client/main.cpp.o: /Users/jay/kvstore/client/main.cpp
+CMakeFiles/kvclient.dir/client/main.cpp.o: CMakeFiles/kvclient.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvstore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/kvclient.dir/client/main.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvclient.dir/client/main.cpp.o -MF CMakeFiles/kvclient.dir/client/main.cpp.o.d -o CMakeFiles/kvclient.dir/client/main.cpp.o -c /Users/jay/kvstore/client/main.cpp
+
+CMakeFiles/kvclient.dir/client/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/kvclient.dir/client/main.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvstore/client/main.cpp > CMakeFiles/kvclient.dir/client/main.cpp.i
+
+CMakeFiles/kvclient.dir/client/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/kvclient.dir/client/main.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvstore/client/main.cpp -o CMakeFiles/kvclient.dir/client/main.cpp.s
 
 CMakeFiles/kvclient.dir/src/helper.cpp.o: CMakeFiles/kvclient.dir/flags.make
-CMakeFiles/kvclient.dir/src/helper.cpp.o: /Users/jay/kvserver/src/helper.cpp
+CMakeFiles/kvclient.dir/src/helper.cpp.o: /Users/jay/kvstore/src/helper.cpp
 CMakeFiles/kvclient.dir/src/helper.cpp.o: CMakeFiles/kvclient.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/kvclient.dir/src/helper.cpp.o"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvclient.dir/src/helper.cpp.o -MF CMakeFiles/kvclient.dir/src/helper.cpp.o.d -o CMakeFiles/kvclient.dir/src/helper.cpp.o -c /Users/jay/kvserver/src/helper.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvstore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/kvclient.dir/src/helper.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvclient.dir/src/helper.cpp.o -MF CMakeFiles/kvclient.dir/src/helper.cpp.o.d -o CMakeFiles/kvclient.dir/src/helper.cpp.o -c /Users/jay/kvstore/src/helper.cpp
 
 CMakeFiles/kvclient.dir/src/helper.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/kvclient.dir/src/helper.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvserver/src/helper.cpp > CMakeFiles/kvclient.dir/src/helper.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvstore/src/helper.cpp > CMakeFiles/kvclient.dir/src/helper.cpp.i
 
 CMakeFiles/kvclient.dir/src/helper.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/kvclient.dir/src/helper.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvserver/src/helper.cpp -o CMakeFiles/kvclient.dir/src/helper.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvstore/src/helper.cpp -o CMakeFiles/kvclient.dir/src/helper.cpp.s
+
+CMakeFiles/kvclient.dir/src/kvprotocol.cpp.o: CMakeFiles/kvclient.dir/flags.make
+CMakeFiles/kvclient.dir/src/kvprotocol.cpp.o: /Users/jay/kvstore/src/kvprotocol.cpp
+CMakeFiles/kvclient.dir/src/kvprotocol.cpp.o: CMakeFiles/kvclient.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvstore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/kvclient.dir/src/kvprotocol.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvclient.dir/src/kvprotocol.cpp.o -MF CMakeFiles/kvclient.dir/src/kvprotocol.cpp.o.d -o CMakeFiles/kvclient.dir/src/kvprotocol.cpp.o -c /Users/jay/kvstore/src/kvprotocol.cpp
+
+CMakeFiles/kvclient.dir/src/kvprotocol.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/kvclient.dir/src/kvprotocol.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvstore/src/kvprotocol.cpp > CMakeFiles/kvclient.dir/src/kvprotocol.cpp.i
+
+CMakeFiles/kvclient.dir/src/kvprotocol.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/kvclient.dir/src/kvprotocol.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvstore/src/kvprotocol.cpp -o CMakeFiles/kvclient.dir/src/kvprotocol.cpp.s
 
 # Object files for target kvclient
 kvclient_OBJECTS = \
-"CMakeFiles/kvclient.dir/client/new_client.cpp.o" \
-"CMakeFiles/kvclient.dir/src/helper.cpp.o"
+"CMakeFiles/kvclient.dir/client/client.cpp.o" \
+"CMakeFiles/kvclient.dir/client/cli.cpp.o" \
+"CMakeFiles/kvclient.dir/client/main.cpp.o" \
+"CMakeFiles/kvclient.dir/src/helper.cpp.o" \
+"CMakeFiles/kvclient.dir/src/kvprotocol.cpp.o"
 
 # External object files for target kvclient
 kvclient_EXTERNAL_OBJECTS =
 
-kvclient: CMakeFiles/kvclient.dir/client/new_client.cpp.o
+kvclient: CMakeFiles/kvclient.dir/client/client.cpp.o
+kvclient: CMakeFiles/kvclient.dir/client/cli.cpp.o
+kvclient: CMakeFiles/kvclient.dir/client/main.cpp.o
 kvclient: CMakeFiles/kvclient.dir/src/helper.cpp.o
+kvclient: CMakeFiles/kvclient.dir/src/kvprotocol.cpp.o
 kvclient: CMakeFiles/kvclient.dir/build.make
 kvclient: CMakeFiles/kvclient.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/jay/kvserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable kvclient"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/jay/kvstore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable kvclient"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/kvclient.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -124,6 +172,6 @@ CMakeFiles/kvclient.dir/clean:
 .PHONY : CMakeFiles/kvclient.dir/clean
 
 CMakeFiles/kvclient.dir/depend:
-	cd /Users/jay/kvserver/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/jay/kvserver /Users/jay/kvserver /Users/jay/kvserver/build /Users/jay/kvserver/build /Users/jay/kvserver/build/CMakeFiles/kvclient.dir/DependInfo.cmake "--color=$(COLOR)" kvclient
+	cd /Users/jay/kvstore/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/jay/kvstore /Users/jay/kvstore /Users/jay/kvstore/build /Users/jay/kvstore/build /Users/jay/kvstore/build/CMakeFiles/kvclient.dir/DependInfo.cmake "--color=$(COLOR)" kvclient
 .PHONY : CMakeFiles/kvclient.dir/depend
 

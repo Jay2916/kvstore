@@ -53,10 +53,10 @@ RM = /opt/homebrew/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/jay/kvserver
+CMAKE_SOURCE_DIR = /Users/jay/kvstore
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/jay/kvserver/build
+CMAKE_BINARY_DIR = /Users/jay/kvstore/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/kvserver.dir/depend.make
@@ -73,62 +73,94 @@ CMakeFiles/kvserver.dir/codegen:
 .PHONY : CMakeFiles/kvserver.dir/codegen
 
 CMakeFiles/kvserver.dir/server/main.cpp.o: CMakeFiles/kvserver.dir/flags.make
-CMakeFiles/kvserver.dir/server/main.cpp.o: /Users/jay/kvserver/server/main.cpp
+CMakeFiles/kvserver.dir/server/main.cpp.o: /Users/jay/kvstore/server/main.cpp
 CMakeFiles/kvserver.dir/server/main.cpp.o: CMakeFiles/kvserver.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/kvserver.dir/server/main.cpp.o"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvserver.dir/server/main.cpp.o -MF CMakeFiles/kvserver.dir/server/main.cpp.o.d -o CMakeFiles/kvserver.dir/server/main.cpp.o -c /Users/jay/kvserver/server/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvstore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/kvserver.dir/server/main.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvserver.dir/server/main.cpp.o -MF CMakeFiles/kvserver.dir/server/main.cpp.o.d -o CMakeFiles/kvserver.dir/server/main.cpp.o -c /Users/jay/kvstore/server/main.cpp
 
 CMakeFiles/kvserver.dir/server/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/kvserver.dir/server/main.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvserver/server/main.cpp > CMakeFiles/kvserver.dir/server/main.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvstore/server/main.cpp > CMakeFiles/kvserver.dir/server/main.cpp.i
 
 CMakeFiles/kvserver.dir/server/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/kvserver.dir/server/main.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvserver/server/main.cpp -o CMakeFiles/kvserver.dir/server/main.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvstore/server/main.cpp -o CMakeFiles/kvserver.dir/server/main.cpp.s
+
+CMakeFiles/kvserver.dir/server/server.cpp.o: CMakeFiles/kvserver.dir/flags.make
+CMakeFiles/kvserver.dir/server/server.cpp.o: /Users/jay/kvstore/server/server.cpp
+CMakeFiles/kvserver.dir/server/server.cpp.o: CMakeFiles/kvserver.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvstore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/kvserver.dir/server/server.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvserver.dir/server/server.cpp.o -MF CMakeFiles/kvserver.dir/server/server.cpp.o.d -o CMakeFiles/kvserver.dir/server/server.cpp.o -c /Users/jay/kvstore/server/server.cpp
+
+CMakeFiles/kvserver.dir/server/server.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/kvserver.dir/server/server.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvstore/server/server.cpp > CMakeFiles/kvserver.dir/server/server.cpp.i
+
+CMakeFiles/kvserver.dir/server/server.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/kvserver.dir/server/server.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvstore/server/server.cpp -o CMakeFiles/kvserver.dir/server/server.cpp.s
 
 CMakeFiles/kvserver.dir/src/hashtable.cpp.o: CMakeFiles/kvserver.dir/flags.make
-CMakeFiles/kvserver.dir/src/hashtable.cpp.o: /Users/jay/kvserver/src/hashtable.cpp
+CMakeFiles/kvserver.dir/src/hashtable.cpp.o: /Users/jay/kvstore/src/hashtable.cpp
 CMakeFiles/kvserver.dir/src/hashtable.cpp.o: CMakeFiles/kvserver.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/kvserver.dir/src/hashtable.cpp.o"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvserver.dir/src/hashtable.cpp.o -MF CMakeFiles/kvserver.dir/src/hashtable.cpp.o.d -o CMakeFiles/kvserver.dir/src/hashtable.cpp.o -c /Users/jay/kvserver/src/hashtable.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvstore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/kvserver.dir/src/hashtable.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvserver.dir/src/hashtable.cpp.o -MF CMakeFiles/kvserver.dir/src/hashtable.cpp.o.d -o CMakeFiles/kvserver.dir/src/hashtable.cpp.o -c /Users/jay/kvstore/src/hashtable.cpp
 
 CMakeFiles/kvserver.dir/src/hashtable.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/kvserver.dir/src/hashtable.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvserver/src/hashtable.cpp > CMakeFiles/kvserver.dir/src/hashtable.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvstore/src/hashtable.cpp > CMakeFiles/kvserver.dir/src/hashtable.cpp.i
 
 CMakeFiles/kvserver.dir/src/hashtable.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/kvserver.dir/src/hashtable.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvserver/src/hashtable.cpp -o CMakeFiles/kvserver.dir/src/hashtable.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvstore/src/hashtable.cpp -o CMakeFiles/kvserver.dir/src/hashtable.cpp.s
 
 CMakeFiles/kvserver.dir/src/helper.cpp.o: CMakeFiles/kvserver.dir/flags.make
-CMakeFiles/kvserver.dir/src/helper.cpp.o: /Users/jay/kvserver/src/helper.cpp
+CMakeFiles/kvserver.dir/src/helper.cpp.o: /Users/jay/kvstore/src/helper.cpp
 CMakeFiles/kvserver.dir/src/helper.cpp.o: CMakeFiles/kvserver.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/kvserver.dir/src/helper.cpp.o"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvserver.dir/src/helper.cpp.o -MF CMakeFiles/kvserver.dir/src/helper.cpp.o.d -o CMakeFiles/kvserver.dir/src/helper.cpp.o -c /Users/jay/kvserver/src/helper.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvstore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/kvserver.dir/src/helper.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvserver.dir/src/helper.cpp.o -MF CMakeFiles/kvserver.dir/src/helper.cpp.o.d -o CMakeFiles/kvserver.dir/src/helper.cpp.o -c /Users/jay/kvstore/src/helper.cpp
 
 CMakeFiles/kvserver.dir/src/helper.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/kvserver.dir/src/helper.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvserver/src/helper.cpp > CMakeFiles/kvserver.dir/src/helper.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvstore/src/helper.cpp > CMakeFiles/kvserver.dir/src/helper.cpp.i
 
 CMakeFiles/kvserver.dir/src/helper.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/kvserver.dir/src/helper.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvserver/src/helper.cpp -o CMakeFiles/kvserver.dir/src/helper.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvstore/src/helper.cpp -o CMakeFiles/kvserver.dir/src/helper.cpp.s
+
+CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o: CMakeFiles/kvserver.dir/flags.make
+CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o: /Users/jay/kvstore/src/kvprotocol.cpp
+CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o: CMakeFiles/kvserver.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/jay/kvstore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o -MF CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o.d -o CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o -c /Users/jay/kvstore/src/kvprotocol.cpp
+
+CMakeFiles/kvserver.dir/src/kvprotocol.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/kvserver.dir/src/kvprotocol.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/jay/kvstore/src/kvprotocol.cpp > CMakeFiles/kvserver.dir/src/kvprotocol.cpp.i
+
+CMakeFiles/kvserver.dir/src/kvprotocol.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/kvserver.dir/src/kvprotocol.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/jay/kvstore/src/kvprotocol.cpp -o CMakeFiles/kvserver.dir/src/kvprotocol.cpp.s
 
 # Object files for target kvserver
 kvserver_OBJECTS = \
 "CMakeFiles/kvserver.dir/server/main.cpp.o" \
+"CMakeFiles/kvserver.dir/server/server.cpp.o" \
 "CMakeFiles/kvserver.dir/src/hashtable.cpp.o" \
-"CMakeFiles/kvserver.dir/src/helper.cpp.o"
+"CMakeFiles/kvserver.dir/src/helper.cpp.o" \
+"CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o"
 
 # External object files for target kvserver
 kvserver_EXTERNAL_OBJECTS =
 
 kvserver: CMakeFiles/kvserver.dir/server/main.cpp.o
+kvserver: CMakeFiles/kvserver.dir/server/server.cpp.o
 kvserver: CMakeFiles/kvserver.dir/src/hashtable.cpp.o
 kvserver: CMakeFiles/kvserver.dir/src/helper.cpp.o
+kvserver: CMakeFiles/kvserver.dir/src/kvprotocol.cpp.o
 kvserver: CMakeFiles/kvserver.dir/build.make
 kvserver: CMakeFiles/kvserver.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/jay/kvserver/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable kvserver"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/jay/kvstore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable kvserver"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/kvserver.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -140,6 +172,6 @@ CMakeFiles/kvserver.dir/clean:
 .PHONY : CMakeFiles/kvserver.dir/clean
 
 CMakeFiles/kvserver.dir/depend:
-	cd /Users/jay/kvserver/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/jay/kvserver /Users/jay/kvserver /Users/jay/kvserver/build /Users/jay/kvserver/build /Users/jay/kvserver/build/CMakeFiles/kvserver.dir/DependInfo.cmake "--color=$(COLOR)" kvserver
+	cd /Users/jay/kvstore/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/jay/kvstore /Users/jay/kvstore /Users/jay/kvstore/build /Users/jay/kvstore/build /Users/jay/kvstore/build/CMakeFiles/kvserver.dir/DependInfo.cmake "--color=$(COLOR)" kvserver
 .PHONY : CMakeFiles/kvserver.dir/depend
 

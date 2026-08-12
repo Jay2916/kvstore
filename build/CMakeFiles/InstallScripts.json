@@ -1,7 +1,7 @@
 {
 	"InstallScripts" : 
 	[
-		"/Users/jay/kvserver/build/cmake_install.cmake"
+		"/Users/jay/kvstore/build/cmake_install.cmake"
 	],
 	"Parallel" : false
 }

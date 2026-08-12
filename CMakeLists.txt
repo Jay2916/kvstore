@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.2)
+cmake_minimum_required(VERSION 3.25)
 
 project(kvstore LANGUAGES CXX)
 
@@ -7,13 +7,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(kvserver
     server/main.cpp
+    server/server.cpp
     src/hashtable.cpp
     src/helper.cpp
+    src/kvprotocol.cpp
 )
 
 add_executable(kvclient
-    client/new_client.cpp
+    client/client.cpp
+    client/cli.cpp
+    client/main.cpp
     src/helper.cpp
+    src/kvprotocol.cpp
+    
 )
 
 target_compile_options(kvclient 

@@ -1,4 +1,4 @@
-/Users/jay/kvserver/build/CMakeFiles/kvserver.dir
-/Users/jay/kvserver/build/CMakeFiles/kvclient.dir
-/Users/jay/kvserver/build/CMakeFiles/edit_cache.dir
-/Users/jay/kvserver/build/CMakeFiles/rebuild_cache.dir
+/Users/jay/kvstore/build/CMakeFiles/kvserver.dir
+/Users/jay/kvstore/build/CMakeFiles/kvclient.dir
+/Users/jay/kvstore/build/CMakeFiles/edit_cache.dir
+/Users/jay/kvstore/build/CMakeFiles/rebuild_cache.dir

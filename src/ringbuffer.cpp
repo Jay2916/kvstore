@@ -1,4 +1,4 @@
-#include "../include/ringbuffer.h"
+#include "../include/ringbuffer.hpp"
 
 
 class RingBuffer{

@@ -1,0 +1,22 @@
+FROM debian:bookworm-slim AS builder
+
+RUN apt-get update && \
+    apt-get install -y build-essential cmake ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY . .
+
+RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+RUN cmake --build build --target kvserver
+
+FROM debian:bookworm-slim
+
+WORKDIR /app
+
+COPY --from=builder /app/build/kvserver /app/kvserver
+
+EXPOSE 1234
+
+CMD ["./kvserver", "1234"]

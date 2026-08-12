@@ -3,9 +3,11 @@
 #include <string>
 #include <span>
 #include <cstdint>
+#include "../include/kvprotocol.hpp"
 
-template <typename T> static void print_vector(std::vector<T> vec);
 
+
+void fd_set_nb(int fd);
 
 void die(std::string msg);
 void alert_msg(std::string msg);
@@ -22,3 +24,5 @@ void vwrite_str(std::span<uint8_t> &out, std::string_view in);
 uint8_t vread_u8(std::span<const uint8_t> &in);
 uint32_t vread_u32(std::span<const uint8_t> &in);
 std::string vread_str(std::span<const uint8_t> &in);
+
+template <typename T> static void print_vector(std::vector<T> vec);

@@ -1,10 +1,17 @@
 #include <iostream>
-#include "../include/helper.h"
 #include <unistd.h>
 #include <assert.h>
 #include <span>
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
+
+#include "../include/helper.hpp"
+
+void fd_set_nb(int fd) {
+    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
+}
+
 void alert_msg(std::string msg){
     std::cout <<"Alert: "<< msg << std::endl;
 }
@@ -13,6 +20,8 @@ void die(std::string msg) {
     std::cerr << "errno: " << err << ", " << msg << std::endl;
     abort();
 }
+
+
 int writeall(int fd, std::span<const uint8_t> buf){
     ssize_t rsize;
     while(!buf.empty()){
@@ -53,13 +62,6 @@ void readfullwe(int fd, std::span<uint8_t> buf){
     }
 }
 
-template <typename T> static void print_vector(std::vector<T> vec){
-    std::cout << "[ ";
-    for(auto it = vec.begin(); it != vec.end(); it++){
-        std::cout << *it << " "; 
-    }
-    std::cout << "] " << std::endl;
-}
 
 void vwrite_u32(std::span<uint8_t> &out, uint32_t in){
     assert(out.size() >= 4);
@@ -103,4 +105,13 @@ std::string vread_str(std::span<const uint8_t> &in){
     std::string out = std::string(in.begin(), in.begin() + len);
     in = in.subspan(len);
     return out;
+}
+
+
+template <typename T> static void print_vector(std::vector<T> vec){
+    std::cout << "[ ";
+    for(auto it = vec.begin(); it != vec.end(); it++){
+        std::cout << *it << " "; 
+    }
+    std::cout << "] " << std::endl;
 }

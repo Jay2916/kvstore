@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <assert.h>
-#include "../include/hashtable.h"
+#include "../include/hashtable.hpp"
 
 const size_t k_max_load_factor = 2;
 const size_t k_init_size = 4;
