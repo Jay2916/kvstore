@@ -1,1 +1,0 @@
-/usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/kvclient.dir/client/client.cpp.o CMakeFiles/kvclient.dir/client/cli.cpp.o CMakeFiles/kvclient.dir/client/main.cpp.o CMakeFiles/kvclient.dir/src/helper.cpp.o CMakeFiles/kvclient.dir/src/kvprotocol.cpp.o -o kvclient
