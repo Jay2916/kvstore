@@ -15,6 +15,22 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/kvclient",
+            "args": ["localhost","1234"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug bench",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/benchmarks/bench",
+            "args": [
+                "-a",
+                "20.233.197.38",
+                "-p",
+                "1234",
+                "--in",
+                "SGDGSSGGSD"
+            ],
             "cwd": "${workspaceFolder}"
         }
     ],

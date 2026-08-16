@@ -14,7 +14,7 @@ enum class Status: uint8_t{
 
 struct Response{
     Status status;
-    std::string data;
+    std::vector<std::byte> data;
 };
 const size_t MAXNSTR = 10;
 const size_t MAX_RLEN = 1024;

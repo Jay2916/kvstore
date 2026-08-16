@@ -1,20 +1,35 @@
+#pragma once
+
 #include <span>
 #include <cstdint>
 #include <vector>
+#include <cstddef>
 
-class RingBuffer{
+template<typename T>
+class RingBuffer {
 private:
-    std::vector<uint8_t> buffer;
+    std::vector<T> buffer;
+    size_t capacity;
     size_t size;
     size_t read_pos;
     size_t write_pos;
+
 public:
-    RingBuffer(int capacity);
-    size_t capacity();
+    RingBuffer(size_t capacity);
+    
+    bool empty();
+    size_t getcapacity();
     size_t readable();
     size_t writable();
     size_t consume(size_t n);
-    std::vector<uint8_t> peek(size_t n);
-    size_t append(std::span<const uint8_t> data);
+    std::vector<T> peek(size_t n);
+    size_t append(std::span<const T> data);
+    size_t contigious_readable();
+    size_t contigious_writable();
+    T* front();
+    T* rear();
+    T first();
+    size_t getsize();
 
 };
+

@@ -10,7 +10,10 @@ std::string eval_status(Status i){
 }
 std::ostream& operator<<(std::ostream& os, const Response& response) {
     os << "Response{status: " << eval_status(response.status)
-    << " ,data: " << std::string(response.data.begin(), response.data.end())
+    << " ,data: " 
+    << std::string(
+        reinterpret_cast<const char*>(response.data.data()),
+        response.data.size())
     << " }";
     return os;
 }

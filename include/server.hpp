@@ -1,28 +1,20 @@
+#pragma once
+
 #include <cstddef>
 #include <vector>
 #include <string>
 #include <span>
 #include <poll.h>
 #include <cstdint>
+#include <sys/epoll.h>
 
 #include "kvprotocol.hpp"
 #include "hashtable.hpp"
 
-struct Conn{
-    int fd;
-    bool want_read;
-    bool want_write;
-    bool want_close;
-    std::vector<uint8_t> incoming;
-    std::vector<uint8_t> outgoing;
-};
+#define MAX_EVENTS 1024
 
-struct Entry{
-    HNode node;
-    std::string key;
-    std::string value;
-};
-
+struct Conn;
+struct Entry;
 class KVserver{
 public:
     explicit KVserver(uint16_t const port);
@@ -32,14 +24,16 @@ public:
     void stop();
 private:
 
+    
+
+    uint16_t const PORT;
     struct {
         HMap db;
     } g_data;           //TODO: remove g_data wrapper
 
-    std::vector<Conn*> fd2conn;
-    std::vector<struct pollfd> poll_args;;
-    uint16_t const PORT;
+    std::vector<struct epoll_event> events{MAX_EVENTS};
     int fd = -1;
+    int epfd = -1;
     bool running = false;
 
     void start_listening();
@@ -53,12 +47,13 @@ private:
     void buf_consume(std::vector<uint8_t> &buf, size_t n);
 
     bool try_one_request(Conn *conn);
-    void do_request(Command cmd, std::vector<std::string> &input, std::vector<uint8_t> &out);
-    int parse_request(std::span<const uint8_t> reader, Command &cmd, std::vector<std::string> &out);
+    int parse_request(std::span<const std::byte> reader, Command &cmd, std::vector<std::vector<std::byte>> &out);
+    int do_request(Command cmd, std::vector<std::vector<std::byte>> &input, Conn* conn);
 
-    void do_get(std::string &key, Response &out);
-    void do_del(std::string &key, Response &out);
-    void do_set(std::string &key, std::string &value, Response &out);
+    void do_get(std::vector<std::byte> &key, Response &out);
+    void do_del(std::vector<std::byte> &key, Response &out);
+    void do_set(std::vector<std::byte> &key, std::vector<std::byte> &value, Response &out);
 
-    uint64_t str_hash(std::string str);
+    uint64_t hash_bytes(std::span<const std::byte> data);
+    void update_epoll_event(Conn* conn)
 };

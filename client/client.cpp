@@ -1,19 +1,20 @@
-#include "../include/client.hpp"
-
 #include <iostream>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <assert.h>
+#include <span>
 
 #include "../include/helper.hpp"
 #include "../include/cli.hpp"
+#include "../include/client.hpp"
 
 KVclient::KVclient(const std::string &addr, uint16_t port)
     :fd(-1), serv_addr(addr), serv_port(port){
     int rv = this->connect_server(serv_addr, serv_port);
     if(rv == -1){
+        std::cout << addr << ":" << port << std::endl;
         die("connect_server failure");
     }
 }
@@ -60,40 +61,47 @@ int KVclient::connect_server(const std::string &host, const uint16_t port) {
 }
 
 Response KVclient::send_query(Command cmd, std::vector<std::string> input){
-    std::vector<uint8_t> out(MAX_QLEN);
-    uint32_t tlen = sizeof(Command) + input.size();
-    std::span<uint8_t> writer = out;
+    std::vector<std::byte> out(MAX_QLEN);
+    uint32_t tlen = 1 + 4;
+    std::span<std::byte> writer = out;
     writer = writer.subspan(4); //reserve space for total len
-    vwrite_u8(writer, static_cast<uint8_t>(cmd));
-    vwrite_u32(writer, static_cast<uint32_t>(input.size()));
+    swrite_u8(writer, static_cast<uint8_t>(cmd));
+    swrite_u32(writer, static_cast<uint32_t>(input.size()));
     for(const auto& it : input){
-        vwrite_str(writer, it);
-        tlen += 4 + sizeof(it);
+        swrite_str(writer, it);
+        tlen += 4 + it.size();
     }
     writer = out;
-    vwrite_u32(writer, tlen);
+    swrite_u32(writer, tlen);
+    print_bytes_as_chars(
+        std::span<const std::byte>(out).first(tlen + 4)
+    );
     writeallwe(fd, std::span(out).first(tlen + 4));
+#ifndef NO_DEBUG
     std::cout << "write: " << tlen + 4 << std::endl;
+#endif
     return read_response();
 }
 
 Response KVclient::read_response(){
-    uint8_t len_buf[4];
+    std::byte len_buf[4];
     readfullwe(fd, len_buf);
-    std::span<const uint8_t> len_reader = len_buf;
-    size_t tlen = (vread_u32(len_reader));
+    std::span<const std::byte> len_reader = len_buf;
+    size_t tlen = (sread_u32(len_reader));
     if(tlen > MAX_RLEN){
         alert_msg("Response data too long.");
         return {};
     }
-    std::vector<uint8_t> in(tlen);
+    std::vector<std::byte> in(tlen);
     readfullwe(fd, in);
-    std::span<const uint8_t> reader = in;
+    std::span<const std::byte> reader = in;
     Response res;
-    res.status = static_cast<Status>(vread_u8(reader));
-    res.data = vread_str(reader);
+    res.status = static_cast<Status>(sread_u8(reader));
+    res.data = sread(reader);
     assert(reader.empty()); //trailing garbage
+#ifndef NO_DEBUG
     std::cout << "read: " << tlen + 4<< std::endl;
+#endif
     return res;
 }
 

@@ -9,15 +9,39 @@
 #include "../include/hashtable.hpp"
 #include "../include/helper.hpp"
 #include "../include/server.hpp"
+#include "../include/ringbuffer.hpp"
 
-
+#define MIN_WRITABLE 0
 //upgrades to do:
-//0.take entry_eq and Entry itself from user, making it customizable
 //1.poll -> epoll
-//2.better buffer management (switch to custom Ringbuffer)
-//3.comvert key and value input to be opaque data i.e. uint8_t?? then intrusive data structure wont have any point
-//implement persistance (first make a snapshot -> then also implement WAL)
+//2.implement WAL -> batching -> snapshots of database
+//3. remove assert and close connection when serialization helpers fail, instead of crashing the server
+//4. gracefull shutdown
 
+//what happens when either of the buffer is full?
+//incoming: make want_read false
+//outgoing: make want_write true
+#define MAX_BUF 1024
+struct Conn{
+    int fd;
+    bool want_read;
+    bool want_write;
+    bool want_close;
+    RingBuffer<std::byte> incoming;
+    RingBuffer<std::byte> outgoing;
+    struct PendingRespose{
+        std::vector<std::byte> data;
+        size_t offset = 0;
+    } pending_response;
+    Conn(int fd, size_t max_capacity)
+        :fd(fd), want_read(true), want_write(false), want_close(false), incoming(max_capacity), outgoing(max_capacity){}
+};
+
+struct Entry{
+    HNode node;
+    std::vector<std::byte> key;
+    std::vector<std::byte> value;
+};
 
 #define container_of(ptr, T, member) \
     ((T *)( (char *)ptr - offsetof(T, member) ))
@@ -37,7 +61,7 @@ KVserver::KVserver(uint16_t const port)
 }
 
 KVserver::~KVserver(){
-    close(fd);
+    this->stop();
 }
 void KVserver::start_listening(){
     int rv;
@@ -65,28 +89,21 @@ void KVserver::start(){
     std::cout << "Starting on PORT " << PORT << std::endl;
     start_listening();
     running = true;
+
+    epfd = epoll_create1(0);
+    if(epfd == -1)  die("epoll_create1() fail");
+
+    struct epoll_event ev{
+        .events = EPOLLIN,
+        .data.ptr = nullptr
+    };
+    if(epoll_ctl(epfd, EPOLL_CTL_ADD, this->fd, &ev) < 0){
+        display_error("epoll_ctl(ADD LISTENING) fail");
+    }
+    
     while(running){
-        //initialize poll_args
-        poll_args.clear();
-        struct pollfd listenpfd = {fd, POLLIN, 0};
-        poll_args.push_back(listenpfd);
-        for(Conn* conn : fd2conn){
-            if(!conn){
-                continue;
-            }
-            struct pollfd pfd = {conn->fd, POLLERR, 0};
-            if(conn->want_read){
-                pfd.events |= POLLIN;
-            }
-            if(conn->want_write){
-                pfd.events |= POLLOUT;
-            }
-            poll_args.push_back(pfd);
 
-        }
-
-        //waiting for readiness using poll()
-        rv = poll(poll_args.data(), (nfds_t)poll_args.size(),-1);
+        rv = epoll_wait(epfd, events.data(), static_cast<int>(events.size()),-1);
         if(rv < 0 && errno == EINTR ){
             continue;
         }
@@ -95,79 +112,110 @@ void KVserver::start(){
         }
 
         //check the listening pfd
-        if(poll_args[0].revents){
-            if(Conn* conn = handle_accept(poll_args[0].fd)){
-                if(fd2conn.size() <= (size_t)conn->fd){
-                    fd2conn.resize(conn->fd + 1);
+        for(int i = 0; i < rv; i++){
+            epoll_event& ev = events[i];
+
+            if(ev.data.ptr == nullptr){
+                handle_accept(this->fd);
+                continue;
+            }
+            Conn* conn = static_cast<Conn*>(ev.data.ptr);
+           
+            if((ev.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) || conn->want_close){
+                if(handle_close(conn) == -1){
+                    display_error("client accept error");
                 }
-                fd2conn[conn->fd] = conn;
+                continue;
             }
-
-        }
-
-        //check Conneection pfds
-        for(int i = 1; i < poll_args.size(); i++){
-            struct pollfd pfd = poll_args[i];
-            Conn* conn = fd2conn[pfd.fd];
-            short ready = pfd.revents;
-            if(pfd.revents & POLLIN){
+            if(ev.events & EPOLLIN){
                 handle_read(conn);
+                if(conn->want_close){
+                    handle_close(conn);
+                    continue;
+                }
             }
-            if(pfd.revents & POLLOUT){
+            if(ev.events & EPOLLOUT){
                 handle_write(conn);
-            }
-            if((ready & POLLERR) || conn->want_close){
-                handle_close(conn);
-                fd2conn[conn->fd] = nullptr;
-                delete conn;
+                if(conn->want_close){
+                    handle_close(conn);
+                    continue;
+                }
             }
         }
+
 
     }
 
 }
 void KVserver::stop(){
-    if(running){
-        running = false;
-        this->~KVserver();
-    }
+    running = false;
+    close(fd);
+    close(epfd);
+    fd = -1;
+    epfd = -1;
 }
-Conn* KVserver::handle_accept(int fd){
+int KVserver::handle_accept(int fd){
     struct sockaddr_in client_addr = {};
     socklen_t addrlen = sizeof(client_addr);
     int connfd = accept(fd, (struct sockaddr*)&client_addr, &addrlen);
     if(connfd == -1){
         alert_msg("accept fail");
+        return nullptr;
     }
-    fd_set_nb(connfd);
-    Conn* conn = new Conn();
-    conn->fd = connfd;
-    conn->want_read = true;
-    return conn;
+    if(fd_set_nb(connfd) == -1){
+        return -1;
+    }
+    Conn* conn = new Conn(connfd, MAX_BUF);
+    struct epoll_event ev{
+        .events = EPOLLIN,
+        .data.ptr = conn
+    };
+    if(epoll_ctl(epfd, EPOLL_CTL_ADD, conn->fd, &ev) < 0){
+        display_error("epoll_ctl(ADD) fail")
+        return nullptr;
+    }
+    return 0;
 }
 
-void KVserver::handle_close(Conn *conn){
+void KVserver::handle_close(Conn* conn){
+    epoll_ctl(this->epfd, EPOLL_CTL_DEL, conn->fd, 0);
     (void)close(conn->fd);
+    delete conn;
 }
 
-void KVserver::handle_read(Conn * conn){
-    uint8_t buf[MAX_QLEN]; 
-    int rv = read(conn->fd, buf, sizeof(buf));
-    
-    if(rv <= 0){
-        if(rv == 0) alert_msg("connection closed by the client\n\n");
-        else alert_msg("read() error");
-        conn->want_close = true; 
-        return;
+void KVserver::handle_read(Conn* conn){
+    std::byte buf[MAX_QLEN];
+    size_t writable = conn->incoming.writable();
+    if(writable > MIN_WRITABLE){
+            ssize_t rv = read(conn->fd, buf, writable);
+            if(rv == 0){
+                alert_msg("connection closed by the client\n\n");
+                conn->want_close = true;
+                return;
+            }
+
+        else if(rv < 0){
+            if(errno == EAGAIN || errno == EWOULDBLOCK){
+                return;
+            }
+            else {
+                alert_msg("read() error");
+            }
+            conn->want_close = true; 
+            return;
+        }
+#ifndef NO_DEBUG
+        std::cout << "read() returned: " << rv << std::endl;
+#endif
+        size_t n = conn->incoming.append(std::span(buf,static_cast<size_t>(rv)));
+        assert(n == static_cast<size_t>(rv));
     }
-    std::cout << "read() returned: " << rv << std::endl;
-    buf_append(conn->incoming, buf, (size_t)rv );
-    
     while(try_one_request(conn)); //optimized for batch requests
 
-    if(conn->outgoing.size() > 0){
+    if(!conn->outgoing.empty()){
         conn->want_read = false;
         conn->want_write = true;
+        update_epoll_event(conn);
         //the socket is likely ready to write in a request-reponse protocol
         //therefore avoid taking one more iteration of poll and write immediately
         //BUT due to batch processing the socket send buffer may be full so we have to check for EAGAIN to be sure
@@ -176,118 +224,137 @@ void KVserver::handle_read(Conn * conn){
 }
 
 void KVserver::handle_write(Conn * conn){
-    assert(conn->outgoing.size() > 0);             //NEW: use assert helps debug impossible situations
-    int rv = write(conn->fd, conn->outgoing.data(), conn->outgoing.size());
-    if(rv < 0 && rv == EAGAIN){
-        return; // socket not ready to write yet(due to batch processing of requests) 
-    }
-    if(rv < 0){                         //write sets errno
+    assert(!conn->outgoing.empty());             
+
+    int rv = write(conn->fd, conn->outgoing.front(), conn->outgoing.contigious_readable());
+
+    //if i want to write in a single call from ringbuffer, i will have to straighten up the data
+    //or, i could call write only on front->last element (implemented)
+
+    if(rv < 0){
+        if(errno == EAGAIN || errno == EWOULDBLOCK){
+            return;
+        }
         alert_msg("write error");
         conn->want_close = true;
         return;
     }
+#ifndef NO_DEBUG
     std::cout << "write() returned: " << rv << std::endl;
-    buf_consume(conn->outgoing, (size_t)rv);
+#endif
+    conn->outgoing.consume(static_cast<size_t>(rv));
 
-    if(conn->outgoing.size() == 0){
+    if(conn->outgoing.empty()){
         conn->want_read = true;
         conn->want_write = false;
+        update_epoll_event(conn);
     }
-}
-
-void KVserver::buf_append(std::vector<uint8_t> &dest_buf, const uint8_t* sr_buf,  size_t n){
-    dest_buf.insert(dest_buf.end(), sr_buf, sr_buf + n);
-}
-
-void KVserver::buf_consume(std::vector<uint8_t> &buf, size_t n){
-    buf.erase(buf.begin(), buf.begin() + n);
 }
 
 bool KVserver::try_one_request(Conn *conn){
-    
-    //uint8_t buf[MAXLEN];
-    if(conn->incoming.size() < 4){
+    int rv;
+    if (conn->pending_response.offset < conn->pending_response.data.size()) {
+        auto remaining = std::span<const std::byte>( conn->pending_response.data).subspan(conn->pending_response.offset);
+        size_t n = conn->outgoing.append(remaining);
+        conn->pending_response.offset += n;
+        //want_write = true
+        return false;
+    }
+    if(conn->incoming.readable() < 4){
         return false;                          //wants more read
     }
-    std::span<const uint8_t> reader = conn->incoming;
-    uint32_t len = vread_u32(reader);
+    uint32_t len = peek_u32(conn->incoming);
+
     if(len > MAX_QLEN){
         alert_msg("protocol len error");
         conn->want_close = true;        //protocol error therefore want close
         return false;
     }
-    if(conn->incoming.size() < 4+len){
+    if(conn->incoming.getsize() < 4+len){
         return false;                             //wants more read
     }
-
+    else{
+        conn->incoming.consume(4);
+    }
+    
     Command cmd;
-    std::vector<std::string> input;
+    std::vector<std::vector<std::byte>> input;
+    std::vector<std::byte> buf = conn->incoming.peek(len);
 
-    if(parse_request(reader, cmd, input) < 0){
+    if(parse_request(std::span(buf), cmd, input) < 0){
         alert_msg("parse error");
         conn->want_close = true;
         return false;
     }
-    buf_consume(conn->incoming, len+4);
-    do_request(cmd, input, conn->outgoing);
+    conn->incoming.consume(static_cast<size_t>(len));
+    if(do_request(cmd, input, conn) < 0){
+        alert_msg("invalid request");
+        conn->want_close = true;
+        return false;
+    }
+    
+    conn->pending_response.offset = conn->outgoing.append(conn->pending_response.data);
     return true;
 }
 
-int KVserver::parse_request(std::span<const uint8_t> reader, Command &cmd, std::vector<std::string> &out){
-    cmd = static_cast<Command>(vread_u8(reader));
-    uint32_t nstr = vread_u32(reader);
-    if(nstr > MAXNSTR){
+int KVserver::parse_request(std::span<const std::byte> reader, Command &cmd, std::vector<std::vector<std::byte>> &out){
+    cmd = static_cast<Command>(sread_u8(reader));
+    uint32_t n = sread_u32(reader);
+    if(n > MAXNSTR){
         return -1;      //protocol error
     }
-    while(out.size() < (size_t)nstr){
-        std::string str = vread_str(reader);
-        out.push_back(str);
+    while(out.size() < (size_t)n){
+        out.push_back(sread(reader));
     }
+    if (!reader.empty())
+        return -1;
     return 0;
 }
 
 
-void KVserver::do_request(Command cmd, std::vector<std::string> &input, std::vector<uint8_t> &out){
+int KVserver::do_request(Command cmd, std::vector<std::vector<std::byte>> &input, Conn* conn){
     Response res = {};
     switch(cmd){
         case Command::GET:
+            if(input.size() != 1) return -1;
             do_get(input[0], res);
             break;
         case Command::SET:
+            if(input.size() != 2) return -1;
             do_set(input[0], input[1], res);
             break;
         case Command::DEL:
+            if(input.size() != 1) return -1;
             do_del(input[0], res);
             break;
         default:
             res.status = Status::RES_ERR;
     }
-    uint32_t tlen = sizeof(Status) + 4 + res.data.size();
-    std::vector<uint8_t> buffer(tlen + 4);
-    std::span<uint8_t> writer = buffer;
 
-    vwrite_u32(writer, static_cast<uint32_t>(tlen));
-    vwrite_u8(writer, static_cast<uint8_t>(res.status));
-    vwrite_str(writer, res.data);
+    uint32_t tlen = 1 + 4 + res.data.size();
+    conn->pending_response.data.resize(tlen + 4);
+    std::span<std::byte> writer = conn->pending_response.data;
 
+    swrite_u32(writer, static_cast<uint32_t>(tlen));
+    swrite_u8(writer, static_cast<uint8_t>(res.status));
+    swrite(writer, res.data);
     assert(writer.empty());
 
-    buf_append(out, buffer.data(), buffer.size());
 }
-uint64_t KVserver::str_hash(std::string str){ //fnv-1a hash function
-    uint64_t hash = 14695981039346656037ULL; // FNV offset basis
-    for (size_t i = 0; i < str.length(); i++) {
-        hash ^= (uint64_t)str[i];
-        hash *= 1099511628211ULL;            // FNV prime
+uint64_t KVserver::hash_bytes(std::span<const std::byte> data) {
+    uint64_t hash = 14695981039346656037ULL;
+    for (std::byte b : data) {
+        hash ^= std::to_integer<uint8_t>(b);
+        hash *= 1099511628211ULL;
     }
     return hash;
 }
 
-void KVserver::do_get(std::string &key, Response &out){
+void KVserver::do_get(std::vector<std::byte> &key, Response &out){
     alert_msg("doing get");
     Entry lookup{};
     lookup.key = key;
-    lookup.node.hcode = str_hash(key);
+    lookup.node.hcode = hash_bytes(key);
     HNode *node = hm_lookup(&(g_data.db), &lookup.node, entry_eq);
     if(node){
         out.status = Status::RES_OK;
@@ -301,11 +368,11 @@ void KVserver::do_get(std::string &key, Response &out){
 
 }
 
-void KVserver::do_set(std::string &key, std::string &value, Response &out){
+void KVserver::do_set(std::vector<std::byte> &key, std::vector<std::byte> &value, Response &out){
     alert_msg("doing set");
     Entry lookup{};
     lookup.key = key;
-    lookup.node.hcode = str_hash(key);
+    lookup.node.hcode = hash_bytes(key);
     HNode *node = hm_lookup(&g_data.db, &lookup.node, entry_eq);
     if(node){
         container_of(node, Entry, node)->value = std::move(value);
@@ -322,11 +389,11 @@ void KVserver::do_set(std::string &key, std::string &value, Response &out){
     out.data = {};
 }
 
-void KVserver::do_del(std::string &key, Response &out){
+void KVserver::do_del(std::vector<std::byte> &key, Response &out){
     alert_msg("doing del");
     Entry lookup{};
     lookup.key = key;
-    lookup.node.hcode = str_hash(key);
+    lookup.node.hcode = hash_bytes(key);
     HNode *node = hm_delete(&g_data.db, &lookup.node, entry_eq);
     if(node){
         out.status = Status::RES_OK;
@@ -337,5 +404,21 @@ void KVserver::do_del(std::string &key, Response &out){
     else{
         out.status = Status::RES_NX;
         out.data = {};
+    }
+}
+
+void KVserver::update_epoll_event(Conn* conn) {
+    epoll_event ev{};
+
+    ev.data.ptr = conn;
+
+    if (conn->want_read)
+        ev.events |= EPOLLIN;
+
+    if (conn->want_write)
+        ev.events |= EPOLLOUT;
+
+    if (epoll_ctl(epfd, EPOLL_CTL_MOD, conn->fd, &ev) < 0) {
+        display_error("epoll_ctl(MOD) fail");
     }
 }

@@ -1,68 +1,117 @@
 #include "../include/ringbuffer.hpp"
 
+#include <algorithm>
 
-class RingBuffer{
+template<typename T>
+RingBuffer<T>::RingBuffer(size_t capacity)
+    : buffer(capacity), capacity(capacity), size(0), read_pos(0), write_pos(0) {}
 
-    std::vector<uint8_t> buffer;
-    size_t size;
-    size_t read_pos;
-    size_t write_pos;
+template<typename T>
+size_t RingBuffer<T>::getcapacity() {
+    return this->capacity;
+}
 
-public:
-    RingBuffer(int capacity)
-    :buffer(capacity), size(0), read_pos(0), write_pos(0){}
+template<typename T>
+size_t RingBuffer<T>::readable() {
+    return size;
+}
 
-    size_t capacity(){
-        return buffer.capacity();
-    }
-    size_t readable(){
-        return size;
-    }
-    size_t writable(){
-        return this->capacity() - size;
-    }
-    size_t consume(size_t n){
-        if(n <= size){
-            read_pos = (read_pos + n) % buffer.capacity();
-            this->size -= n;
-            return n;
-        }
-        else{
-            return 0;
-        }
-    }
-    std::vector<uint8_t> peek(size_t n){            //NEXT: implement spans somehow, accounting for wrapping > make it faster by avoiding copying into a new vector 
-        if(this->readable() < n){
-            return {};
-        }
-        std::vector<uint8_t> data{};
-        data.reserve(n);
-        size_t i = 0;
-        size_t pos;
-        while(i < n){
-            pos = (read_pos + i) % this->capacity();
-            data.push_back(buffer[pos]);
-            i++;
-        }
-        return data;
-    }
-    size_t append(std::span<const uint8_t> data){
-        size_t dsize = data.size();
-        if(dsize > this->writable()){
-            return 0;
-        }
-        if((write_pos + dsize) <= this->capacity()){
-            std::copy(data.begin(), data.end(), buffer.begin() + write_pos);
-        }
-        else{
-            size_t slice_pos = this->capacity() - write_pos; //number of positions left before wrapping around
-            std::copy(data.begin(), data.begin() + slice_pos, buffer.begin() + write_pos);
-            std::copy(data.begin() + slice_pos, data.end(), buffer.begin());
-        }
-        write_pos = (write_pos + dsize) % this->capacity();
-        this->size += dsize;
-        return dsize;
+template<typename T>
+size_t RingBuffer<T>::writable() {
+    return capacity - size;
+}
 
+template<typename T>
+size_t RingBuffer<T>::consume(size_t n) {
+    if (n <= size) {
+        read_pos = (read_pos + n) % capacity;
+        size -= n;
+        return n;
     }
 
-};
+    return 0;
+}
+
+template<typename T>
+std::vector<T> RingBuffer<T>::peek(size_t n) { //refactor: use std::copy 
+    if (readable() < n) {
+        return {};
+    }
+    std::vector<T> data;
+    data.reserve(n);
+    for (size_t i = 0; i < n; i++) {
+        size_t pos = (read_pos + i) % capacity;
+        data.push_back(buffer[pos]);
+    }
+
+    return data;
+}
+
+template<typename T>
+size_t RingBuffer<T>::contigious_readable(){
+    return std::min(size, this->capacity - read_pos);
+}
+
+template<typename T>
+size_t RingBuffer<T>::contigious_writable(){
+    if (size == capacity)
+        return 0;
+    if (write_pos >= read_pos)
+        return capacity - write_pos;
+    return read_pos - write_pos;
+}
+template<typename T>
+T* RingBuffer<T>::front(){
+    return &(this->buffer[read_pos]);
+}
+template<typename T>
+size_t RingBuffer<T>::getsize(){
+    return this->size;
+}
+template<typename T>
+T* RingBuffer<T>::rear(){
+    return &(this->buffer[write_pos]);
+}
+template<typename T>
+T RingBuffer<T>::first(){
+    return this->buffer[read_pos];
+}
+template<typename T>
+bool RingBuffer<T>::empty(){
+    return size == 0;
+}
+template<typename T>
+size_t RingBuffer<T>::append(std::span<const T> data) {
+    size_t dsize;
+    if(writable() == 0) return 0;
+    else dsize = std::min(data.size(), writable());
+
+    if (write_pos + dsize <= capacity) {
+        std::copy(
+            data.begin(),
+            data.end(),
+            buffer.begin() + write_pos
+        );
+    } 
+    else {
+        size_t slice_pos = capacity - write_pos;
+
+        std::copy(
+            data.begin(),
+            data.begin() + slice_pos,
+            buffer.begin() + write_pos
+        );
+
+        std::copy(
+            data.begin() + slice_pos,
+            data.end(),
+            buffer.begin()
+        );
+    }
+
+    write_pos = (write_pos + dsize) % capacity;
+    size += dsize;
+
+    return dsize;
+}
+template class RingBuffer<std::byte>;

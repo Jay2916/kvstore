@@ -11,6 +11,7 @@ add_executable(kvserver
     src/hashtable.cpp
     src/helper.cpp
     src/kvprotocol.cpp
+    src/ringbuffer.cpp
 )
 
 add_executable(kvclient
@@ -19,6 +20,7 @@ add_executable(kvclient
     client/main.cpp
     src/helper.cpp
     src/kvprotocol.cpp
+    src/ringbuffer.cpp
     
 )
 
