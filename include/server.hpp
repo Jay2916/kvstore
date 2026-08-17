@@ -38,7 +38,7 @@ private:
 
     void start_listening();
 
-    Conn* handle_accept(int fd);
+    int handle_accept(int fd);
     void handle_close(Conn *conn);
     void handle_read(Conn *conn);
     void handle_write(Conn *conn);
@@ -55,5 +55,5 @@ private:
     void do_set(std::vector<std::byte> &key, std::vector<std::byte> &value, Response &out);
 
     uint64_t hash_bytes(std::span<const std::byte> data);
-    void update_epoll_event(Conn* conn)
+    void update_epoll_event(Conn* conn);
 };

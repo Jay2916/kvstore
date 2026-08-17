@@ -9,11 +9,12 @@
 
 
 
-void fd_set_nb(int fd);
+int fd_set_nb(int fd);
 
 void die(std::string msg);
 void alert_msg(std::string msg);
 void die(std::string msg);
+void display_error(std::string msg);
 
 //these are used only by client
 int readfull(int fd, std::span<std::byte> buf);

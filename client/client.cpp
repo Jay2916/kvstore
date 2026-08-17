@@ -72,10 +72,10 @@ Response KVclient::send_query(Command cmd, std::vector<std::string> input){
         tlen += 4 + it.size();
     }
     writer = out;
-    swrite_u32(writer, tlen);
-    print_bytes_as_chars(
-        std::span<const std::byte>(out).first(tlen + 4)
-    );
+    // swrite_u32(writer, tlen);
+    // print_bytes_as_chars(
+    //     std::span<const std::byte>(out).first(tlen + 4)
+    // );
     writeallwe(fd, std::span(out).first(tlen + 4));
 #ifndef NO_DEBUG
     std::cout << "write: " << tlen + 4 << std::endl;

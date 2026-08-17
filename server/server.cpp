@@ -93,10 +93,9 @@ void KVserver::start(){
     epfd = epoll_create1(0);
     if(epfd == -1)  die("epoll_create1() fail");
 
-    struct epoll_event ev{
-        .events = EPOLLIN,
-        .data.ptr = nullptr
-    };
+    struct epoll_event ev;
+    ev.events = EPOLLIN;
+    ev.data.ptr = nullptr;
     if(epoll_ctl(epfd, EPOLL_CTL_ADD, this->fd, &ev) < 0){
         display_error("epoll_ctl(ADD LISTENING) fail");
     }
@@ -116,15 +115,15 @@ void KVserver::start(){
             epoll_event& ev = events[i];
 
             if(ev.data.ptr == nullptr){
-                handle_accept(this->fd);
+                if(handle_accept(this->fd) == -1){
+                    display_error("handle_accept() fail");
+                }
                 continue;
             }
             Conn* conn = static_cast<Conn*>(ev.data.ptr);
            
             if((ev.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)) || conn->want_close){
-                if(handle_close(conn) == -1){
-                    display_error("client accept error");
-                }
+                handle_close(conn);
                 continue;
             }
             if(ev.events & EPOLLIN){
@@ -160,19 +159,18 @@ int KVserver::handle_accept(int fd){
     int connfd = accept(fd, (struct sockaddr*)&client_addr, &addrlen);
     if(connfd == -1){
         alert_msg("accept fail");
-        return nullptr;
+        return -1;
     }
     if(fd_set_nb(connfd) == -1){
         return -1;
     }
     Conn* conn = new Conn(connfd, MAX_BUF);
-    struct epoll_event ev{
-        .events = EPOLLIN,
-        .data.ptr = conn
-    };
+    struct epoll_event ev;
+    ev.events = EPOLLIN;
+    ev.data.ptr = conn;
     if(epoll_ctl(epfd, EPOLL_CTL_ADD, conn->fd, &ev) < 0){
-        display_error("epoll_ctl(ADD) fail")
-        return nullptr;
+        display_error("epoll_ctl(ADD) fail");
+        return -1;
     }
     return 0;
 }
@@ -281,7 +279,7 @@ bool KVserver::try_one_request(Conn *conn){
     std::vector<std::vector<std::byte>> input;
     std::vector<std::byte> buf = conn->incoming.peek(len);
 
-    if(parse_request(std::span(buf), cmd, input) < 0){
+    if(parse_request(std::span(buf), cmd, input) == -1){
         alert_msg("parse error");
         conn->want_close = true;
         return false;
@@ -339,6 +337,7 @@ int KVserver::do_request(Command cmd, std::vector<std::vector<std::byte>> &input
     swrite_u8(writer, static_cast<uint8_t>(res.status));
     swrite(writer, res.data);
     assert(writer.empty());
+    return 0;
 
 }
 uint64_t KVserver::hash_bytes(std::span<const std::byte> data) {

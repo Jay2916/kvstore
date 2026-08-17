@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
 #include <iostream>
+#include <cstdint>
+#include <vector>
+
 enum class Command: uint8_t{
     GET, 
     SET,
