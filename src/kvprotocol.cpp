@@ -17,3 +17,5 @@ std::ostream& operator<<(std::ostream& os, const Response& response) {
     << " }";
     return os;
 }
+
+void serialize(std::vector<std::byte>& out, Response)

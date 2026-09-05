@@ -13,7 +13,6 @@
 
 #define MIN_WRITABLE 0
 //upgrades to do:
-//1.poll -> epoll
 //2.implement WAL -> batching -> snapshots of database
 //3. remove assert and close connection when serialization helpers fail, instead of crashing the server
 //4. gracefull shutdown
@@ -36,24 +35,6 @@ struct Conn{
     Conn(int fd, size_t max_capacity)
         :fd(fd), want_read(true), want_write(false), want_close(false), incoming(max_capacity), outgoing(max_capacity){}
 };
-
-struct Entry{
-    HNode node;
-    std::vector<std::byte> key;
-    std::vector<std::byte> value;
-};
-
-#define container_of(ptr, T, member) \
-    ((T *)( (char *)ptr - offsetof(T, member) ))
-
-
-bool entry_eq(HNode *hnode1, HNode *hnode2){
-    Entry *e1 = container_of(hnode1, Entry, node);
-    Entry *e2 = container_of(hnode2, Entry, node);
-    return e1->key == e2->key;
-}
-
-
 
 KVserver::KVserver(uint16_t const port)
     :PORT(port){
@@ -249,8 +230,11 @@ void KVserver::handle_write(Conn * conn){
     }
 }
 
+//RequestDispatcher
 bool KVserver::try_one_request(Conn *conn){
     int rv;
+
+    //outgoing buffer is full and threrfore needs to be sent before trying new request
     if (conn->pending_response.offset < conn->pending_response.data.size()) {
         auto remaining = std::span<const std::byte>( conn->pending_response.data).subspan(conn->pending_response.offset);
         size_t n = conn->outgoing.append(remaining);
@@ -294,117 +278,111 @@ bool KVserver::try_one_request(Conn *conn){
     conn->pending_response.offset = conn->outgoing.append(conn->pending_response.data);
     return true;
 }
+// //codec
+// int KVserver::parse_request(std::span<const std::byte> reader, Command &cmd, std::vector<std::vector<std::byte>> &out){
+//     cmd = static_cast<Command>(sread_u8(reader));
+//     uint32_t n = sread_u32(reader);
+//     if(n > MAXNSTR){
+//         return -1;      //protocol error
+//     }
+//     while(out.size() < (size_t)n){
+//         out.push_back(sread(reader));
+//     }
+//     if (!reader.empty())
+//         return -1;
+//     return 0;
+// }
 
-int KVserver::parse_request(std::span<const std::byte> reader, Command &cmd, std::vector<std::vector<std::byte>> &out){
-    cmd = static_cast<Command>(sread_u8(reader));
-    uint32_t n = sread_u32(reader);
-    if(n > MAXNSTR){
-        return -1;      //protocol error
-    }
-    while(out.size() < (size_t)n){
-        out.push_back(sread(reader));
-    }
-    if (!reader.empty())
-        return -1;
-    return 0;
-}
+// //RequestDispatcher
+// int KVserver::do_request(Command cmd, std::vector<std::vector<std::byte>> &input, Conn* conn){
+//     Response res = {};
+//     switch(cmd){
+//         case Command::GET:
+//             if(input.size() != 1) return -1;
+//             do_get(input[0], res);
+//             break;
+//         case Command::SET:
+//             if(input.size() != 2) return -1;
+//             do_set(input[0], input[1], res);
+//             break;
+//         case Command::DEL:
+//             if(input.size() != 1) return -1;
+//             do_del(input[0], res);
+//             break;
+//         default:
+//             res.status = Status::RES_ERR;
+//     }
+//     serialize_response()
+    
+//     return 0;
 
+// }
+//StorageEngine
+// uint64_t KVserver::hash_bytes(std::span<const std::byte> data) {
+//     uint64_t hash = 14695981039346656037ULL;
+//     for (std::byte b : data) {
+//         hash ^= std::to_integer<uint8_t>(b);
+//         hash *= 1099511628211ULL;
+//     }
+//     return hash;
+// }
+//StorageEngine
+// void KVserver::do_get(std::vector<std::byte> &key, Response &out){
+//     alert_msg("doing get");
+//     Entry lookup{};
+//     lookup.key = key;
+//     lookup.node.hcode = hash_bytes(key);
+//     HNode *node = hm_lookup(&(g_data.db), &lookup.node, entry_eq);
+//     if(node){
+//         out.status = Status::RES_OK;
+//         Entry *e = container_of(node, Entry, node);
+//         out.data.assign( e->value.begin(), e->value.end());
+//     }
+//     else{
+//         out.status = Status::RES_NX;
+//         out.data = {};
+//     }
 
-int KVserver::do_request(Command cmd, std::vector<std::vector<std::byte>> &input, Conn* conn){
-    Response res = {};
-    switch(cmd){
-        case Command::GET:
-            if(input.size() != 1) return -1;
-            do_get(input[0], res);
-            break;
-        case Command::SET:
-            if(input.size() != 2) return -1;
-            do_set(input[0], input[1], res);
-            break;
-        case Command::DEL:
-            if(input.size() != 1) return -1;
-            do_del(input[0], res);
-            break;
-        default:
-            res.status = Status::RES_ERR;
-    }
-
-    uint32_t tlen = 1 + 4 + res.data.size();
-    conn->pending_response.data.resize(tlen + 4);
-    std::span<std::byte> writer = conn->pending_response.data;
-
-    swrite_u32(writer, static_cast<uint32_t>(tlen));
-    swrite_u8(writer, static_cast<uint8_t>(res.status));
-    swrite(writer, res.data);
-    assert(writer.empty());
-    return 0;
-
-}
-uint64_t KVserver::hash_bytes(std::span<const std::byte> data) {
-    uint64_t hash = 14695981039346656037ULL;
-    for (std::byte b : data) {
-        hash ^= std::to_integer<uint8_t>(b);
-        hash *= 1099511628211ULL;
-    }
-    return hash;
-}
-
-void KVserver::do_get(std::vector<std::byte> &key, Response &out){
-    alert_msg("doing get");
-    Entry lookup{};
-    lookup.key = key;
-    lookup.node.hcode = hash_bytes(key);
-    HNode *node = hm_lookup(&(g_data.db), &lookup.node, entry_eq);
-    if(node){
-        out.status = Status::RES_OK;
-        Entry *e = container_of(node, Entry, node);
-        out.data.assign( e->value.begin(), e->value.end());
-    }
-    else{
-        out.status = Status::RES_NX;
-        out.data = {};
-    }
-
-}
-
-void KVserver::do_set(std::vector<std::byte> &key, std::vector<std::byte> &value, Response &out){
-    alert_msg("doing set");
-    Entry lookup{};
-    lookup.key = key;
-    lookup.node.hcode = hash_bytes(key);
-    HNode *node = hm_lookup(&g_data.db, &lookup.node, entry_eq);
-    if(node){
-        container_of(node, Entry, node)->value = std::move(value);
-    }
-    else{
-        Entry *e = new Entry();
-        e->node.hcode = lookup.node.hcode;
-        e->node.next = NULL;
-        e->key = std::move(key);
-        e->value = std::move(value);
-        hm_insert(&g_data.db, &e->node);
-    }
-    out.status = Status::RES_OK;
-    out.data = {};
-}
-
-void KVserver::do_del(std::vector<std::byte> &key, Response &out){
-    alert_msg("doing del");
-    Entry lookup{};
-    lookup.key = key;
-    lookup.node.hcode = hash_bytes(key);
-    HNode *node = hm_delete(&g_data.db, &lookup.node, entry_eq);
-    if(node){
-        out.status = Status::RES_OK;
-        out.data = {};
-        Entry *e = container_of(node, Entry, node);
-        delete e;
-    }
-    else{
-        out.status = Status::RES_NX;
-        out.data = {};
-    }
-}
+// }
+//StorageEngine
+// void KVserver::do_set(std::vector<std::byte> &key, std::vector<std::byte> &value, Response &out){
+//     alert_msg("doing set");
+//     Entry lookup{};
+//     lookup.key = key;
+//     lookup.node.hcode = hash_bytes(key);
+//     HNode *node = hm_lookup(&g_data.db, &lookup.node, entry_eq);
+//     if(node){
+//         container_of(node, Entry, node)->value = std::move(value);
+//     }
+//     else{
+//         Entry *e = new Entry();
+//         e->node.hcode = lookup.node.hcode;
+//         e->node.next = NULL;
+//         e->key = std::move(key);
+//         e->value = std::move(value);
+//         hm_insert(&g_data.db, &e->node);
+//     }
+//     out.status = Status::RES_OK;
+//     out.data = {};
+// }
+//StorageEngine
+// void KVserver::do_del(std::vector<std::byte> &key, Response &out){
+//     alert_msg("doing del");
+//     Entry lookup{};
+//     lookup.key = key;
+//     lookup.node.hcode = hash_bytes(key);
+//     HNode *node = hm_delete(&g_data.db, &lookup.node, entry_eq);
+//     if(node){
+//         out.status = Status::RES_OK;
+//         out.data = {};
+//         Entry *e = container_of(node, Entry, node);
+//         delete e;
+//     }
+//     else{
+//         out.status = Status::RES_NX;
+//         out.data = {};
+//     }
+// }
 
 void KVserver::update_epoll_event(Conn* conn) {
     epoll_event ev{};

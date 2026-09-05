@@ -4,10 +4,12 @@
 #include <cstdint>
 #include <vector>
 
+#define HEADER_LEN 5
 enum class Command: uint8_t{
     GET, 
     SET,
-    DEL
+    DEL,
+    INV
 };
 enum class Status: uint8_t{
     RES_OK,
@@ -18,6 +20,11 @@ enum class Status: uint8_t{
 struct Response{
     Status status;
     std::vector<std::byte> data;
+};
+
+struct Query{
+    Command cmd;
+    std::vector<std::vector<std::byte>> args;
 };
 const size_t MAXNSTR = 10;
 const size_t MAX_RLEN = 1024;
