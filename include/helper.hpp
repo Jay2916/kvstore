@@ -42,3 +42,12 @@ uint32_t peek_u32(RingBuffer<std::byte>& rf);
 template <typename T> static void print_vector(std::vector<T> vec);
 
 void print_bytes_as_chars(std::span<const std::byte> data);
+
+std::string eval_status(Status i);
+std::string eval_command(Command cmd);
+
+std::ostream& operator<<(std::ostream& os, const Response& response);
+std::ostream& operator<<(std::ostream& os, const Query& query);
+
+std::string toString(const std::vector<std::byte>& bytes);
+std::vector<std::byte> toBytes(std::string_view str);

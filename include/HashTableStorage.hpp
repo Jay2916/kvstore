@@ -3,7 +3,9 @@
 #include <cstdint>
 #include <cstddef>
 #include <optional>
+#include "../include/hashtable.hpp"
 #include "../include/StorageEngine.hpp"
+
 
 struct Entry{
     HNode node;
@@ -22,9 +24,9 @@ public:
 
 private:
     HMap hmap;
-    uint64_t KVserver::hash_bytes(std::span<const std::byte> data);
+    uint64_t hash_bytes(std::span<const std::byte> data);
 
 
 
 
-}
+};

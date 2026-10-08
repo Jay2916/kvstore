@@ -1,10 +1,22 @@
 {
     "version": "0.2.0",
     "configurations": [
+        {
+            "name": "Debug test_codec",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/test/test_codec",
+            "args": [],
+            "cwd": "${workspaceFolder}/test",
+            "stopAtEntry": false,
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
 
         {
             "name": "Debug kvserver",
-            "type": "lldb",
+            "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/kvserver",
             "args": ["1234"],
@@ -12,7 +24,7 @@
         },
         {
             "name": "Debug kvclient",
-            "type": "lldb",
+            "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/kvclient",
             "args": ["localhost","1234"],

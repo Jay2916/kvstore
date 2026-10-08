@@ -10,6 +10,7 @@
 
 #include "kvprotocol.hpp"
 #include "hashtable.hpp"
+#include "RequestDispatcher.hpp"
 
 #define MAX_EVENTS 1024
 
@@ -17,20 +18,15 @@ struct Conn;
 struct Entry;
 class KVserver{
 public:
-    explicit KVserver(uint16_t const port);
+    explicit KVserver(uint16_t const port, RequestDispatcher& rd);
     ~KVserver();
 
     void start();
     void stop();
 private:
 
-    
-
     uint16_t const PORT;
-    struct {
-        HMap db;
-    } g_data;           //TODO: remove g_data wrapper
-
+    RequestDispatcher& requestDispatcher;
     std::vector<struct epoll_event> events{MAX_EVENTS};
     int fd = -1;
     int epfd = -1;

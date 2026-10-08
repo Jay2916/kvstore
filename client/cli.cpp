@@ -1,5 +1,6 @@
 #include "../include/cli.hpp"
 #include "../include/client.hpp"
+#include "../include/helper.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -25,7 +26,7 @@ void cli_loop(KVclient& kvc) {
 
         std::string command;
         iss >> command;
-
+        Query query = {};
         if (command == "set") {
             std::string key;
             std::string value;
@@ -35,10 +36,10 @@ void cli_loop(KVclient& kvc) {
                 continue;
             }
 
-            std::vector<std::string> args{key, value};
+            query.cmd = Command::SET;
+            query.args.push_back(toBytes(key));
+            query.args.push_back(toBytes(value));
 
-            Response res = kvc.send_query(Command::SET, args);
-            std::cout << res << '\n';
         }
         else if (command == "get") {
             std::string key;
@@ -48,10 +49,9 @@ void cli_loop(KVclient& kvc) {
                 continue;
             }
 
-            std::vector<std::string> args{key};
+            query.cmd = Command::GET;
+            query.args.push_back(toBytes(key));
 
-            Response res = kvc.send_query(Command::GET, args);
-            std::cout << res << '\n';
         }
         else if (command == "del") {
             std::string key;
@@ -61,13 +61,14 @@ void cli_loop(KVclient& kvc) {
                 continue;
             }
 
-            std::vector<std::string> args{key};
+            query.cmd = Command::DEL;
+            query.args.push_back(toBytes(key));
 
-            Response res = kvc.send_query(Command::DEL, args);
-            std::cout << res << '\n';
         }
         else {
             std::cout << "Unknown command\n";
         }
+        Response res = kvc.send_query(query);
+        std::cout << res << '\n';
     }
 }

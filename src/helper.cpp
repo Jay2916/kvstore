@@ -8,6 +8,7 @@
 #include <cstddef>
 
 #include "../include/helper.hpp"
+#include "../include/ringbuffer.hpp"
 
 int fd_set_nb(int fd) {
     int flags = fcntl(fd, F_GETFL, 0);
@@ -196,4 +197,52 @@ void print_bytes_as_chars(std::span<const std::byte> data) {
         std::cout << static_cast<char>(std::to_integer<unsigned char>(b));
     }
     std::cout << '\n';
+}
+
+
+
+std::string eval_status(Status i){
+    switch(i){
+        case Status::RES_OK:    return "RES_OK";
+        case Status::RES_ERR:   return "RES_ERR";
+        case Status::RES_NX:    return "RES_NX";
+        default:    return "INVALID";
+    }
+}
+std::string eval_command(Command cmd){
+    switch(cmd){
+        case Command::GET:  return "GET";
+        case Command::SET:  return "SET";
+        case Command::DEL:  return "DEL";
+        default:    return "INVALID";
+    }
+}
+std::string toString(const std::vector<std::byte>& bytes) {
+    return std::string(
+        reinterpret_cast<const char*>(bytes.data()),
+        bytes.size()
+    );
+}
+std::vector<std::byte> toBytes(std::string_view str) {
+    const auto* ptr =
+        reinterpret_cast<const std::byte*>(str.data());
+
+    return {ptr, ptr + str.size()};
+}
+
+std::ostream& operator<<(std::ostream& os, const Response& response) {
+    os << "Response{status: " << eval_status(response.status)
+    << " ,data: " 
+    << toString(response.data)
+    << " }";
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const Query& query) {
+    os << "Query{cmd: " << eval_command(query.cmd);
+    for(const auto& q : query.args){
+        os << ", " << toString(q) ;
+    }
+    os << " }" << std::endl;
+    return os;
 }

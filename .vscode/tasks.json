@@ -1,6 +1,15 @@
 {
     "tasks": [
         {
+            "label": "make",
+            "type": "shell",
+            "command": "make",
+            "options": {
+                "cwd": "${workspaceFolder}/test"
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
             "type": "shell",
             "label": "build",
             "command": "make dbserver"

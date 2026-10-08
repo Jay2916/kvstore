@@ -1,12 +1,14 @@
+#pragma once
 #include "../include/kvprotocol.hpp"
 #include <span>
+#include <vector>
+#include <cstddef>
+
 class Codec{
 public:
-    std::vector<std::byte> encode_response(Response response);
-    decode_response();
-    encode_query();
-    bool decode_query(std::span<std::byte> reader, Query &query);
+    static std::vector<std::byte> encode_response(Response response);
+    static Response decode_response(std::span<const std::byte> reader);
+    static Query decode_query(std::span<const std::byte> reader);
+    static std::vector<std::byte> encode_query(Query query);
 
-private:
-
-}
+};

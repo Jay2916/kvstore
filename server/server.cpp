@@ -10,9 +10,12 @@
 #include "../include/helper.hpp"
 #include "../include/server.hpp"
 #include "../include/ringbuffer.hpp"
+#include "../include/codec.hpp"
+#include "../include/RequestDispatcher.hpp"
 
 #define MIN_WRITABLE 0
 //upgrades to do:
+//1. change conn* to a smart pointer
 //2.implement WAL -> batching -> snapshots of database
 //3. remove assert and close connection when serialization helpers fail, instead of crashing the server
 //4. gracefull shutdown
@@ -36,8 +39,8 @@ struct Conn{
         :fd(fd), want_read(true), want_write(false), want_close(false), incoming(max_capacity), outgoing(max_capacity){}
 };
 
-KVserver::KVserver(uint16_t const port)
-    :PORT(port){
+KVserver::KVserver(uint16_t const port, RequestDispatcher& rd)
+    :PORT(port), requestDispatcher(rd){
     running = true;
 }
 
@@ -165,30 +168,33 @@ void KVserver::handle_close(Conn* conn){
 void KVserver::handle_read(Conn* conn){
     std::byte buf[MAX_QLEN];
     size_t writable = conn->incoming.writable();
-    if(writable > MIN_WRITABLE){
-            ssize_t rv = read(conn->fd, buf, writable);
-            if(rv == 0){
-                alert_msg("connection closed by the client\n\n");
-                conn->want_close = true;
-                return;
-            }
-
-        else if(rv < 0){
-            if(errno == EAGAIN || errno == EWOULDBLOCK){
-                return;
-            }
-            else {
-                alert_msg("read() error");
-            }
-            conn->want_close = true; 
+    if(writable == 0){
+        return;
+    }
+    ssize_t rv = read(conn->fd, buf, writable);
+    if(rv == 0){
+        alert_msg("connection closed by the client\n\n");
+        conn->want_close = true;
+        return;
+    }
+    else if(rv < 0){
+        if(errno == EAGAIN || errno == EWOULDBLOCK){
             return;
         }
-#ifndef NO_DEBUG
-        std::cout << "read() returned: " << rv << std::endl;
-#endif
-        size_t n = conn->incoming.append(std::span(buf,static_cast<size_t>(rv)));
-        assert(n == static_cast<size_t>(rv));
+        else {
+            alert_msg("read() error");
+        }
+        conn->want_close = true; 
+        return;
     }
+    std::cout << "read() returned: " << rv << std::endl;
+
+    size_t n = conn->incoming.append(std::span(buf,static_cast<size_t>(rv)));
+    if(n < static_cast<size_t>(rv)){
+        alert_msg("handle_read: incoming buffer full, read bytes rejected");
+    }
+    
+
     while(try_one_request(conn)); //optimized for batch requests
 
     if(!conn->outgoing.empty()){
@@ -203,7 +209,9 @@ void KVserver::handle_read(Conn* conn){
 }
 
 void KVserver::handle_write(Conn * conn){
-    assert(!conn->outgoing.empty());             
+    if(conn->outgoing.empty()){
+        return;
+    }          
 
     int rv = write(conn->fd, conn->outgoing.front(), conn->outgoing.contigious_readable());
 
@@ -218,9 +226,9 @@ void KVserver::handle_write(Conn * conn){
         conn->want_close = true;
         return;
     }
-#ifndef NO_DEBUG
+
     std::cout << "write() returned: " << rv << std::endl;
-#endif
+
     conn->outgoing.consume(static_cast<size_t>(rv));
 
     if(conn->outgoing.empty()){
@@ -232,14 +240,13 @@ void KVserver::handle_write(Conn * conn){
 
 //RequestDispatcher
 bool KVserver::try_one_request(Conn *conn){
-    int rv;
 
     //outgoing buffer is full and threrfore needs to be sent before trying new request
     if (conn->pending_response.offset < conn->pending_response.data.size()) {
         auto remaining = std::span<const std::byte>( conn->pending_response.data).subspan(conn->pending_response.offset);
         size_t n = conn->outgoing.append(remaining);
         conn->pending_response.offset += n;
-        //want_write = true
+        //the socket must write before trying new requests
         return false;
     }
     if(conn->incoming.readable() < 4){
@@ -252,28 +259,28 @@ bool KVserver::try_one_request(Conn *conn){
         conn->want_close = true;        //protocol error therefore want close
         return false;
     }
-    if(conn->incoming.getsize() < 4+len){
+    if(conn->incoming.getsize() < len){
         return false;                             //wants more read
     }
-    else{
-        conn->incoming.consume(4);
-    }
-    
-    Command cmd;
-    std::vector<std::vector<std::byte>> input;
-    std::vector<std::byte> buf = conn->incoming.peek(len);
 
-    if(parse_request(std::span(buf), cmd, input) == -1){
-        alert_msg("parse error");
-        conn->want_close = true;
-        return false;
-    }
+    
+    std::vector<std::byte> buf = conn->incoming.peek(len);
+    Query query = Codec::decode_query(buf);
+    Response response = this->requestDispatcher.dispatch(query);    
+    conn->pending_response.data = Codec::encode_response(response);
+
+    // if(parse_request(std::span(buf), cmd, input) == -1){
+    //     alert_msg("parse error");
+    //     conn->want_close = true;
+    //     return false;
+    // }
+    
     conn->incoming.consume(static_cast<size_t>(len));
-    if(do_request(cmd, input, conn) < 0){
-        alert_msg("invalid request");
-        conn->want_close = true;
-        return false;
-    }
+    // if(do_request(cmd, input, conn) < 0){
+    //     alert_msg("invalid request");
+    //     conn->want_close = true;
+    //     return false;
+    // }
     
     conn->pending_response.offset = conn->outgoing.append(conn->pending_response.data);
     return true;

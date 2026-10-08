@@ -16,7 +16,7 @@ public:
     explicit KVclient(const std::string& addr, uint16_t port);
     ~KVclient();
     
-    Response send_query(Command cmd, std::vector<std::string> input);
+    Response send_query(Query query);
 
 private:
     void print_success(struct addrinfo* ai);

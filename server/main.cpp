@@ -1,24 +1,31 @@
 #include "../include/server.hpp"
-
+#include "../include/RequestDispatcher.hpp"
+#include "../include/HashTableStorage.hpp"
 #include <iostream>
 #include <csignal>
 
-KVserver kvs{(uint16_t const)1234};
+KVserver* kvs;
 
 
 void signal_handler(int sig){
+    (void)sig;
     std::cout << "Interrupt Received, Stopping the server..." << std::endl;
-    kvs.stop();
+    kvs->stop();
 }
 int main(int argc , char** argv){
     if(argc != 2){
-        std::cout << "Arugments must be <port>" << std::endl;
-        return 1;
+    std::cout << "Arugments must be <port>" << std::endl;
+    return 1;
     }
 
-    signal(SIGINT, signal_handler);
+    HashTableStorage store{};
+    RequestDispatcher rd{store};
+    KVserver kvserver{(uint16_t)atoi(argv[1]), rd};
+    kvs = &kvserver;
+
+    std::signal(SIGINT, signal_handler);
     std::signal(SIGTERM, signal_handler);
 
-    kvs.start();
+    kvserver.start();
 
 }

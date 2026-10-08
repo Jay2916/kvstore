@@ -9,6 +9,7 @@
 #include "../include/helper.hpp"
 #include "../include/cli.hpp"
 #include "../include/client.hpp"
+#include "../include/codec.hpp"
 
 KVclient::KVclient(const std::string &addr, uint16_t port)
     :fd(-1), serv_addr(addr), serv_port(port){
@@ -60,48 +61,32 @@ int KVclient::connect_server(const std::string &host, const uint16_t port) {
     return 0;
 }
 
-Response KVclient::send_query(Command cmd, std::vector<std::string> input){
-    std::vector<std::byte> out(MAX_QLEN);
-    uint32_t tlen = 1 + 4;
-    std::span<std::byte> writer = out;
-    writer = writer.subspan(4); //reserve space for total len
-    swrite_u8(writer, static_cast<uint8_t>(cmd));
-    swrite_u32(writer, static_cast<uint32_t>(input.size()));
-    for(const auto& it : input){
-        swrite_str(writer, it);
-        tlen += 4 + it.size();
-    }
-    writer = out;
-    // swrite_u32(writer, tlen);
-    // print_bytes_as_chars(
-    //     std::span<const std::byte>(out).first(tlen + 4)
-    // );
-    writeallwe(fd, std::span(out).first(tlen + 4));
+Response KVclient::send_query(Query query){
+    std::vector<std::byte> enc_query;
+    enc_query = Codec::encode_query(query);
+    writeallwe(fd, std::span(enc_query));
 #ifndef NO_DEBUG
-    std::cout << "write: " << tlen + 4 << std::endl;
+    std::cout << "write: " << enc_query.size() << std::endl;
 #endif
     return read_response();
 }
 
 Response KVclient::read_response(){
-    std::byte len_buf[4];
-    readfullwe(fd, len_buf);
-    std::span<const std::byte> len_reader = len_buf;
-    size_t tlen = (sread_u32(len_reader));
+    std::vector<std::byte> buf(MAX_RLEN);
+    std::span<std::byte> writer2buf(buf);
+    std::span<const std::byte> reader(buf);
+    readfullwe(fd, writer2buf.first(4));
+    size_t tlen = sread_u32(reader);
     if(tlen > MAX_RLEN){
         alert_msg("Response data too long.");
         return {};
     }
-    std::vector<std::byte> in(tlen);
-    readfullwe(fd, in);
-    std::span<const std::byte> reader = in;
-    Response res;
-    res.status = static_cast<Status>(sread_u8(reader));
-    res.data = sread(reader);
-    assert(reader.empty()); //trailing garbage
-#ifndef NO_DEBUG
-    std::cout << "read: " << tlen + 4<< std::endl;
-#endif
+    readfullwe(fd, writer2buf.subspan(4, tlen-4));
+    reader = buf;
+    Response res = Codec::decode_response(reader.first(tlen));
+
+    std::cout << "read: " << tlen<< std::endl;
+
     return res;
 }
 
