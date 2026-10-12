@@ -24,26 +24,44 @@ add_library(Codec
     src/helper.cpp
 )
 
-add_executable(kvserver
-    server/main.cpp
-    server/server.cpp
+#kvstore_client -------------------------------------------------
+add_library(kvstore_client STATIC
+    src/client.cpp
     src/codec.cpp
     src/helper.cpp
     src/ringbuffer.cpp
 )
-target_link_libraries(kvserver PRIVATE RequestDispatcher HashTableStorage RingBuffer Codec)
+target_compile_features(kvstore_client PUBLIC cxx_std_20)
 
-add_executable(kvclient
-    client/client.cpp
-    client/cli.cpp
-    client/main.cpp
+target_compile_options(kvstore_client 
+    PRIVATE -Wall -Wextra -Werror -g3)
+
+
+#kvstore_server -------------------------------------------------
+add_executable(kvstore_server
+    server/main.cpp
+    src/server.cpp
+    src/codec.cpp
     src/helper.cpp
-    
+    src/ringbuffer.cpp
 )
-target_link_libraries(kvclient PRIVATE RingBuffer Codec)
-
-target_compile_options(kvclient 
+target_compile_options(kvstore_server 
     PRIVATE -Wall -Wextra -Werror -g3)
 
-target_compile_options(kvserver 
-    PRIVATE -Wall -Wextra -Werror -g3)
+target_link_libraries(kvstore_server PRIVATE RequestDispatcher HashTableStorage RingBuffer Codec)
+
+
+# Demo executable using the library ------------------------------
+add_executable(kvclient_student_demo
+    client/demo_main.cpp
+)
+add_executable(kvclient_cli_demo
+    client/demo_cli.cpp
+    client/cli.cpp
+)
+
+target_link_libraries(kvclient_student_demo PRIVATE kvstore_client)
+target_link_libraries(kvclient_cli_demo PRIVATE kvstore_client)
+
+
+
