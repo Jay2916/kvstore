@@ -11,6 +11,7 @@ A C++20 in-memory key-value store with a Linux TCP server, a binary protocol, an
 - [Features](#features)
 - [Requirements](#requirements)
 - [Build and run](#build-and-run)
+- [Reusable client library](#reusable-client-library)
 - [Client API](#client-api)
 - [Interactive CLI](#interactive-cli)
 - [Architecture](#architecture)
@@ -90,6 +91,103 @@ cmake --build build --target kvclient
 
 It still needs a running server to perform requests.
 
+## Reusable client library
+
+The supplied project builds a client executable. To reuse its connection and protocol code through a CMake library target, make the following changes once in the kvstore repository.
+
+### Define the library
+
+Replace the existing `add_executable(kvclient ...)` and `target_link_libraries(kvclient ...)` blocks in the root `CMakeLists.txt` with:
+
+```cmake
+add_library(kvstore_client STATIC
+    client/client.cpp
+    src/codec.cpp
+    src/helper.cpp
+    src/ringbuffer.cpp
+)
+
+add_library(kvstore::client ALIAS kvstore_client)
+
+target_compile_features(kvstore_client PUBLIC cxx_std_20)
+
+target_include_directories(kvstore_client PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
+
+add_executable(kvclient
+    client/main.cpp
+    client/cli.cpp
+)
+
+target_link_libraries(kvclient PRIVATE kvstore::client)
+```
+
+Keep the existing server targets and compiler settings. `main.cpp` and `cli.cpp` remain part of the demo executable; the library contains the transport, codec, and shared helpers. Do not also compile these library implementation files directly into `kvclient`.
+
+The `PUBLIC` settings automatically provide the include directory and C++20 requirement to applications linking `kvstore::client`.
+
+### Prevent socket ownership from being copied
+
+`KVclient` owns a socket and closes it in its destructor. Add these declarations in the `public` section of `include/client.hpp` to prevent two copied clients from owning the same socket:
+
+```cpp
+KVclient(const KVclient&) = delete;
+KVclient& operator=(const KVclient&) = delete;
+```
+
+### Build the library and demo
+
+From the repository root:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --target kvstore_client kvclient
+```
+
+This produces `build/libkvstore_client.a` and `build/kvclient` on compatible Unix-like systems. The library can be built independently with `--target kvstore_client`. A running server is required only when sending requests.
+
+### Use the library in another project
+
+Place the updated kvstore sources inside your application's `vendor/kvstore` directory:
+
+```text
+my-app/
+├── CMakeLists.txt
+├── main.cpp
+└── vendor/
+    └── kvstore/
+        ├── CMakeLists.txt
+        ├── include/
+        ├── client/
+        ├── src/
+        └── server/
+```
+
+Use this `CMakeLists.txt` in `my-app`:
+
+```cmake
+cmake_minimum_required(VERSION 3.25)
+project(my_app LANGUAGES CXX)
+
+add_subdirectory(vendor/kvstore EXCLUDE_FROM_ALL)
+
+add_executable(my_app main.cpp)
+target_link_libraries(my_app PRIVATE kvstore::client)
+```
+
+`EXCLUDE_FROM_ALL` keeps unrelated kvstore targets, including the server, out of the application's default build. The client library and its required sources are built because `my_app` links them.
+
+Save the [Client API example](#client-api) below as `my-app/main.cpp`. With a server listening on port `4444`, build and run the application from `my-app`:
+
+```bash
+cmake -S . -B build
+cmake --build build --target my_app
+./build/my_app
+```
+
+Applications include `client.hpp`, `kvprotocol.hpp`, and any required helper headers directly; they do not need to compile the client sources themselves. This setup reuses the library from source through CMake. An installed package supporting `find_package(kvstore)` requires additional install and export configuration.
+
 ## Client API
 
 `KVclient` connects to a host and port on construction. Call `send_query(Query)` to send an operation and receive a `Response`.
@@ -124,7 +222,7 @@ int main() {
 }
 ```
 
-For example, save this as `example.cpp` in the repository root and build it with:
+Use this as `main.cpp` in the application setup above. Alternatively, without making the library changes, save it as `example.cpp` in the kvstore repository root and compile the required sources directly:
 
 ```bash
 c++ -std=c++20 -Iinclude example.cpp client/client.cpp \
@@ -227,13 +325,3 @@ total_length:u32 | status:u8 | data_length:u32 | data_bytes
 | `RES_NX` | `2` | Key does not exist |
 
 Successful `GET` returns the stored bytes. Successful `SET` and `DEL` return empty data.
-
-### Size limits
-
-`MAX_QLEN` and `MAX_RLEN` are both `1024`, and `MAXNSTR` is `2`. The server and decoders limit the **whole frame** to 1024 bytes, while the encoders check the size excluding the four-byte total-length field. Keep whole frames at or below 1024 bytes for compatibility.
-
-- `GET` / `DEL` frame size: `13 + key_length`.
-- `SET` frame size: `17 + key_length + value_length`.
-- Response frame size: `9 + data_length`.
-
-A `SET` therefore needs `key_length + value_length <= 1007` bytes, and a compatible response can contain at most 1015 data bytes. Application payload formats are independent of protocol framing: the student demo uses little-endian integers inside its value bytes.
